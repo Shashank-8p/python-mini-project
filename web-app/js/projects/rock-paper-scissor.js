@@ -28,7 +28,34 @@ function getRockPaperScissorHTML() {
                     </div>
                     <div class="result-message" id="resultMessage">Make your choice!</div>
                 </div>
-                
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <span class="stat-label">Games Played</span>
+                        <strong id="gamesPlayed">0</strong>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">Wins</span>
+                        <strong id="wins">0</strong>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">Losses</span>
+                        <strong id="losses">0</strong>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">Current Streak</span>
+                        <strong id="currentStreak">0</strong>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">Best Streak</span>
+                        <strong id="bestStreak">0</strong>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">Best Score</span>
+                        <strong id="bestScore">0</strong>
+                    </div>
+                </div>
+
                 <div class="choices">
                     <button class="choice-btn" data-choice="rock">
                         <span class="choice-icon">🪨</span>
@@ -108,6 +135,33 @@ function getRockPaperScissorHTML() {
                 min-height: 2rem;
                 color: var(--primary-color);
             }
+
+            .stats-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+                gap: 1rem;
+                margin: 1.5rem 0 2rem;
+            }
+
+            .stat-card {
+                background: var(--surface-color);
+                border: 1px solid var(--border-color);
+                border-radius: 16px;
+                padding: 1rem;
+                text-align: center;
+            }
+
+            .stat-label {
+                display: block;
+                font-size: 0.9rem;
+                color: var(--text-secondary);
+                margin-bottom: 0.5rem;
+            }
+
+            .stat-card strong {
+                font-size: 1.5rem;
+                color: var(--primary-color);
+            }
             
             .choices {
                 display: flex;
@@ -173,9 +227,43 @@ function initRockPaperScissor() {
     const choices = ['rock', 'paper', 'scissors'];
     const emojis = { rock: '🪨', paper: '📄', scissors: '✂️' };
     
+    const storage = window.appStorage || {
+        saveToStorage(key, value) {
+            localStorage.setItem(key, JSON.stringify(value));
+        },
+        loadFromStorage(key, defaultValue = null) {
+            const data = localStorage.getItem(key);
+            if (!data) return defaultValue;
+            try {
+                return JSON.parse(data);
+            } catch {
+                return defaultValue;
+            }
+        },
+    };
+
     const choiceBtns = document.querySelectorAll('.choice-btn');
     const resetBtn = document.getElementById('resetRPS');
-    
+
+    const gamesPlayedDisplay = document.getElementById('gamesPlayed');
+    const winsDisplay = document.getElementById('wins');
+    const lossesDisplay = document.getElementById('losses');
+    const currentStreakDisplay = document.getElementById('currentStreak');
+    const bestStreakDisplay = document.getElementById('bestStreak');
+    const bestScoreDisplay = document.getElementById('bestScore');
+
+    const stats = storage.loadFromStorage('rpsStats', {
+        gamesPlayed: 0,
+        wins: 0,
+        losses: 0,
+        currentStreak: 0,
+        bestStreak: 0,
+    });
+
+    let bestScore = storage.loadFromStorage('rpsBestScore', 0);
+    updateStatsDisplay();
+    updateRpsBestScore();
+
     choiceBtns.forEach(btn => {
         btn.addEventListener('click', () => {
             const playerChoice = btn.getAttribute('data-choice');
@@ -191,7 +279,23 @@ function initRockPaperScissor() {
         document.getElementById('playerChoice').textContent = '❓';
         document.getElementById('computerChoice').textContent = '❓';
     });
-    
+
+    function updateStatsDisplay() {
+        gamesPlayedDisplay.textContent = stats.gamesPlayed;
+        winsDisplay.textContent = stats.wins;
+        lossesDisplay.textContent = stats.losses;
+        currentStreakDisplay.textContent = stats.currentStreak;
+        bestStreakDisplay.textContent = stats.bestStreak;
+    }
+
+    function updateRpsBestScore() {
+        bestScoreDisplay.textContent = bestScore || 0;
+    }
+
+    function saveRpsStats() {
+        storage.saveToStorage('rpsStats', stats);
+    }
+
     function playRound(playerChoice) {
         const computerChoice = choices[Math.floor(Math.random() * 3)];
         
@@ -202,6 +306,7 @@ function initRockPaperScissor() {
         
         if (playerChoice === computerChoice) {
             result = "It's a tie! 🤝";
+            stats.gamesPlayed++;
         } else if (
             (playerChoice === 'rock' && computerChoice === 'scissors') ||
             (playerChoice === 'paper' && computerChoice === 'rock') ||
@@ -209,13 +314,29 @@ function initRockPaperScissor() {
         ) {
             result = 'You win! 🎉';
             playerScore++;
+            stats.gamesPlayed++;
+            stats.wins++;
+            stats.currentStreak++;
+            if (stats.currentStreak > stats.bestStreak) {
+                stats.bestStreak = stats.currentStreak;
+            }
+            if (playerScore > bestScore) {
+                bestScore = playerScore;
+                storage.saveToStorage('rpsBestScore', bestScore);
+            }
         } else {
             result = 'Computer wins! 🤖';
             computerScore++;
+            stats.gamesPlayed++;
+            stats.losses++;
+            stats.currentStreak = 0;
         }
         
         document.getElementById('resultMessage').textContent = result;
         updateScore();
+        saveRpsStats();
+        updateStatsDisplay();
+        updateRpsBestScore();
     }
     
     function updateScore() {

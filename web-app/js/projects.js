@@ -11,11 +11,8 @@ function getProjectHTML(projectName) {
         'hangman': getHangmanHTML(),
         'word-scramble': getWordScrambleHTML(),
         'flames': getFlamesHTML(),
-<<<<<<< HEAD
         'dots-boxes': getDotsBoxesHTML(),
-=======
         'emoji-memory': getEmojiMemoryGameHTML(),
->>>>>>> upstream/main
         'fibonacci': getFibonacciHTML(),
         'progression-recognizer': getProgressionRecognizerHTML(),
         'pascal-triangle': getPascalTriangleHTML(),
@@ -32,6 +29,8 @@ function getProjectHTML(projectName) {
         'typing-speed-tester': getTypingSpeedTesterHTML(),
         'snake-game': getsnakeGameHTML(),
         'password-forge': getPasswordForgeHTML(),
+        'whack-a-mole': getWhackaMoleHTML(),  
+        'simon-says': getSimonSaysHTML(),
         'spot-the-difference': getSpotTheDifferenceHTML(),
         'whack-a-mole': getWhackaMoleHTML(),
         '2048-game': get2048GameHTML(),
@@ -50,11 +49,8 @@ function initializeProject(projectName) {
         'hangman': initHangman,
         'word-scramble': initWordScramble,
         'flames': initFlames,
-<<<<<<< HEAD
         'dots-boxes': initDotsBoxes,
-=======
         'emoji-memory': initEmojiMemoryGame,
->>>>>>> upstream/main
         'fibonacci': initFibonacci,
         'progression-recognizer': initProgressionRecognizer,
         'pascal-triangle': initPascalTriangle,
@@ -70,8 +66,10 @@ function initializeProject(projectName) {
         'number-converter': initNumberConverter,
         'typing-speed-tester': initTypingSpeedTester,
         'snake-game': initSnakeGame,
+        'password-forge': initPasswordForge, // Register Password Forge initializer
         'spot-the-difference': initSpotTheDifference,
         'whack-a-mole': initWhackaMole,
+        'simon-says': initSimonSays,
         '2048-game': init2048Game,
     };
 
@@ -1422,72 +1420,91 @@ function initCalculator() {
     let currentValue = '0';
     let previousValue = '';
     let operation = '';
-
+    let isNewOperand = false;
+    
     document.querySelectorAll('.calc-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             const value = btn.getAttribute('data-value');
             const action = btn.getAttribute('data-action');
-
+            
             if (value) {
                 handleNumber(value);
             } else if (action) {
                 handleAction(action);
             }
-
+            
             updateDisplay();
         });
     });
-
+    
     function handleNumber(num) {
-        if (currentValue === '0' || currentValue === 'Error') {
-            currentValue = num;
+        // Prevent multiple decimals
+        if (num === '.' && currentValue.includes('.')) return;
+        
+        if (currentValue === '0' || currentValue === 'Error' || isNewOperand) {
+            
+            currentValue = num === '.' ? '0.' : num;
+            isNewOperand = false;
         } else {
             currentValue += num;
         }
     }
-
+    
     function handleAction(action) {
         if (action === 'clear') {
             currentValue = '0';
             previousValue = '';
             operation = '';
         } else if (action === 'delete') {
-            currentValue = currentValue.slice(0, -1) || '0';
+            if (!isNewOperand && currentValue !== 'Error') {
+                currentValue = currentValue.slice(0, -1) || '0';
+            }
         } else if (action === '=') {
-            calculate();
+            if (operation && previousValue) {
+                calculate();
+                operation = ''; 
+            }
         } else {
-            if (previousValue && operation) {
+
+            if (operation && previousValue && !isNewOperand) {
                 calculate();
             }
             previousValue = currentValue;
-            currentValue = '0';
             operation = action;
+            isNewOperand = true; 
         }
     }
-
+    
     function calculate() {
-        try {
-            const prev = parseFloat(previousValue);
-            const curr = parseFloat(currentValue);
-            let result;
-
-            switch (operation) {
-                case '+': result = prev + curr; break;
-                case '-': result = prev - curr; break;
-                case '*': result = prev * curr; break;
-                case '/': result = prev / curr; break;
-                case '**': result = Math.pow(prev, curr); break;
-                default: return;
-            }
-
-            currentValue = result.toString();
-            previousValue = '';
-            operation = '';
-        } catch (e) {
-            currentValue = 'Error';
+        const prev = parseFloat(previousValue);
+        const curr = parseFloat(currentValue);
+        let result;
+        
+        if (isNaN(prev) || isNaN(curr)) return;
+        
+        switch (operation) {
+            case '+': result = prev + curr; break;
+            case '-': result = prev - curr; break;
+            case '*': result = prev * curr; break;
+            case '/': 
+                if (curr === 0) {
+                    currentValue = 'Error';
+                    previousValue = '';
+                    return;
+                }
+                result = prev / curr; 
+                break;
+            case '**': result = Math.pow(prev, curr); break;
+            default: return;
         }
+        
+        // Fix JS floating point precision issues (e.g., 0.1 + 0.2)
+        result = parseFloat(result.toPrecision(12));
+        
+        currentValue = result.toString();
+        previousValue = '';
     }
-
+    
     function updateDisplay() {
         display.textContent = currentValue;
     }
@@ -7166,16 +7183,31 @@ function getPasswordForgeHTML() {
 }
 
 function initPasswordForge() {
-    const checkBtn = document.getElementById('checkPasswordBtn');
+    const checkBtn = document.getElementById("checkPasswordBtn");
+    const passwordInput = document.getElementById("passwordInput");
+    const result = document.getElementById("passwordResult");
+    const rulesContainer = document.getElementById("rulesContainer");
 
-    checkBtn.addEventListener('click', () => {
-        const password = document.getElementById('passwordInput').value;
-        const result = document.getElementById('passwordResult');
+    if (!checkBtn) return;
+
+    checkBtn.addEventListener("click", () => {
+        const password = passwordInput.value;
+        if (!password.trim()) {
+            result.textContent = "⚠️ Please enter a password";
+            return;
+        }
 
         const hasLength = password.length >= 8;
         const hasNumber = /\d/.test(password);
         const hasUpper = /[A-Z]/.test(password);
         const hasSpecial = /[!@#$%^&*]/.test(password);
+
+        rulesContainer.innerHTML = `
+            <p>${hasLength ? "✅" : "❌"} Must contain at least 8 characters</p>
+            <p>${hasNumber ? "✅" : "❌"} Must contain a number</p>
+            <p>${hasUpper ? "✅" : "❌"} Must contain an uppercase letter</p>
+            <p>${hasSpecial ? "✅" : "❌"} Must contain a special character</p>
+        `;
 
         if (hasLength && hasNumber && hasUpper && hasSpecial) {
             result.textContent = "✅ Strong Password!";

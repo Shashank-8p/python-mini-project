@@ -21,6 +21,10 @@ function getNumberGuessingHTML() {
                         <span>Range:</span>
                         <span id="range">1-100</span>
                     </div>
+                    <div class="info-item">
+                        <span>Best Score:</span>
+                        <span id="bestScore">—</span>
+                    </div>
                 </div>
                 
                 <button class="btn-reset" id="resetGuessing">New Game</button>
@@ -95,8 +99,27 @@ function initNumberGuessing() {
     const feedback = document.getElementById('feedback');
     const attemptsDisplay = document.getElementById('attempts');
     const rangeDisplay = document.getElementById('range');
+    const bestScoreDisplay = document.getElementById('bestScore');
     const resetBtn = document.getElementById('resetGuessing');
-    
+
+    const storage = window.appStorage || {
+        saveToStorage(key, value) {
+            localStorage.setItem(key, JSON.stringify(value));
+        },
+        loadFromStorage(key, defaultValue = null) {
+            const data = localStorage.getItem(key);
+            if (!data) return defaultValue;
+            try {
+                return JSON.parse(data);
+            } catch {
+                return defaultValue;
+            }
+        },
+    };
+
+    let bestScore = storage.loadFromStorage('numberGuessBest', null);
+    updateBestScoreDisplay();
+
     submitBtn.addEventListener('click', makeGuess);
     guessInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') makeGuess();
@@ -114,6 +137,16 @@ function initNumberGuessing() {
         guessInput.disabled = false;
         submitBtn.disabled = false;
     });
+
+    function updateBestScoreDisplay() {
+        bestScoreDisplay.textContent = bestScore === null ? '—' : `${bestScore} attempt${bestScore === 1 ? '' : 's'}`;
+    }
+
+    function saveBestScore(newScore) {
+        bestScore = newScore;
+        storage.saveToStorage('numberGuessBest', bestScore);
+        updateBestScoreDisplay();
+    }
     
     function makeGuess() {
         const guess = parseInt(guessInput.value);
@@ -132,6 +165,9 @@ function initNumberGuessing() {
             feedback.style.color = 'var(--success-color)';
             guessInput.disabled = true;
             submitBtn.disabled = true;
+            if (bestScore === null || attempts < bestScore) {
+                saveBestScore(attempts);
+            }
         } else if (guess < secretNumber) {
             feedback.textContent = '📈 Too low! Try higher!';
             feedback.style.color = 'var(--primary-color)';

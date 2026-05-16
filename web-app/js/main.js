@@ -342,11 +342,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (tipsSection) tipsSection.style.display = 'block';
     }
 
-    function renderSuggestions(query) {
-        if (!query) {
-            renderRecentSearches();
-            return;
-        }
+let lastFocusedElement = null;
+let modalTabTrapHandler = null;
+let modalTrapRemover = null;
 
         const matches = getMatchingProjects(query);
 
@@ -378,11 +376,90 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        if (resultsSection) resultsSection.style.display = 'block';
-        if (recentSearchesSection) recentSearchesSection.style.display = 'none';
-        if (tipsSection) tipsSection.style.display = 'none';
-        selectedSuggestionIndex = -1;
-    }
+const appStorageFallback = {
+    saveToStorage(key, value) {
+        localStorage.setItem(key, JSON.stringify(value));
+    },
+    loadFromStorage(key, defaultValue = null) {
+        const data = localStorage.getItem(key);
+        if (!data) return defaultValue;
+        try {
+            return JSON.parse(data);
+        } catch {
+            return defaultValue;
+        }
+    },
+    removeFromStorage(key) {
+        localStorage.removeItem(key);
+    },
+    async initialize() {
+        if (typeof window === 'undefined') return this;
+        window.appStorage = this;
+
+        try {
+            const module = await import('./storage.js');
+            const imported = {
+                saveToStorage: module.saveToStorage,
+                loadFromStorage: module.loadFromStorage,
+                removeFromStorage: module.removeFromStorage,
+            };
+            window.appStorage = imported;
+            return imported;
+        } catch (err) {
+            console.warn('Unable to load storage helper module, using fallback localStorage wrapper.', err);
+            return this;
+        }
+    },
+};
+
+appStorageFallback.initialize();
+
+function saveLastPlayedGame(projectName) {
+    (window.appStorage || appStorageFallback).saveToStorage('lastPlayedGame', projectName);
+}
+
+function openProject(name) {
+    openProjectSafe(name, null);
+}
+
+function openProjectSafe(name, opener) {
+    if (!modal || !modalBody) return;
+
+    lastFocusedElement = opener || document.activeElement;
+    modal.classList.add('active');
+    modal.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+    setMainInert(true);
+    if (modalDialogTitle) modalDialogTitle.textContent = `Project: ${name}`;
+
+    saveLastPlayedGame(name);
+
+    safeRun(() => {
+        if (typeof getProjectHTML === 'function') {
+            modalBody.innerHTML = getProjectHTML(name) || '<div style="padding:1rem">Project content unavailable.</div>';
+        } else {
+            modalBody.innerHTML = '<div style="padding:1rem">Project content unavailable.</div>';
+        }
+        if (typeof initializeProject === 'function') initializeProject(name);
+    });
+
+    modalTrapRemover = trapFocus(modal);
+
+    const focusables = getFocusableElements(modalBody);
+    (focusables[0] || modalClose)?.focus();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const html = document.documentElement;
+    const themeToggle = document.getElementById('themeToggle');
+    const soundToggle = document.getElementById('soundToggle');
+    const backToTop = document.getElementById('backToTop');
+    const tabs = Array.from(document.querySelectorAll('.tab'));
+    const projectCards = Array.from(document.querySelectorAll('.project-card'));
+    const modal = document.getElementById('projectModal');
+    const modalClose = document.getElementById('modalClose');
+    const modalBody = document.getElementById('modalBody');
+    const modalTitle = document.getElementById('modalDialogTitle');
 
     // Wire up search input if present
     if (searchInput) {
@@ -506,7 +583,7 @@ document.addEventListener('DOMContentLoaded', () => {
         modal.setAttribute('aria-hidden', 'true');
         document.body.style.overflow = '';
         setMainInert(false);
-        if (removeTrap) { removeTrap(); removeTrap = null; }
+        if (modalTrapRemover) { modalTrapRemover(); modalTrapRemover = null; }
         if (modalBody) modalBody.innerHTML = '';
         if (lastFocusedElement && typeof lastFocusedElement.focus === 'function') lastFocusedElement.focus();
         lastFocusedElement = null;

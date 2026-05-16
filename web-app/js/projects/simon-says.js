@@ -1,0 +1,575 @@
+function getSimonSaysHTML() {
+
+    return `
+
+    <div class="game-container">
+
+        <h1>🧠 Simon Says</h1>
+
+        <p class="subtitle">
+            Only follow commands that start with “Simon says”!
+        </p>
+
+        <div class="score-board">
+
+            <div class="score-card">
+                ⭐ Score
+                <h2 id="score">0</h2>
+            </div>
+
+            <div class="score-card">
+                ⚡ Speed
+                <h2 id="speed">3s</h2>
+            </div>
+
+        </div>
+
+        <div class="timer-bar">
+
+            <div
+                class="timer-fill"
+                id="timerFill">
+            </div>
+
+        </div>
+
+        <div
+            class="command-box"
+            id="commandBox">
+
+            Press Start
+
+        </div>
+
+        <div class="actions">
+
+            <button
+                class="action-btn jump"
+                data-action="Jump">
+
+                🏃 Jump
+
+            </button>
+
+            <button
+                class="action-btn duck"
+                data-action="Duck">
+
+                🦆 Duck
+
+            </button>
+
+            <button
+                class="action-btn clap"
+                data-action="Clap">
+
+                👏 Clap
+
+            </button>
+
+            <button
+                class="action-btn spin"
+                data-action="Spin">
+
+                🔄 Spin
+
+            </button>
+
+        </div>
+
+        <div class="controls">
+
+            <button
+                class="control-btn"
+                id="startBtn">
+
+                ▶ Start Game
+
+            </button>
+
+            <button
+                class="control-btn"
+                id="restartBtn">
+
+                🔄 Restart
+
+            </button>
+
+        </div>
+
+        <p id="message"></p>
+
+    </div>
+
+    <style>
+
+    .game-container{
+
+        width:100%;
+
+        max-width:700px;
+
+        margin:auto;
+
+        background:linear-gradient(
+            135deg,
+            #0f172a,
+            #1e293b
+        );
+
+        border-radius:24px;
+
+        padding:35px;
+
+        text-align:center;
+
+        color:white;
+
+        box-shadow:0 0 25px rgba(0,0,0,0.4);
+    }
+
+    .game-container h1{
+
+        font-size:2.5rem;
+
+        margin-bottom:10px;
+    }
+
+    .subtitle{
+
+        opacity:0.85;
+
+        margin-bottom:25px;
+    }
+
+    .score-board{
+
+        display:flex;
+
+        justify-content:center;
+
+        gap:20px;
+
+        margin-bottom:25px;
+
+        flex-wrap:wrap;
+    }
+
+    .score-card{
+
+        background:rgba(255,255,255,0.08);
+
+        padding:12px 20px;
+
+        border-radius:14px;
+
+        min-width:120px;
+    }
+
+    .command-box{
+
+        background:rgba(255,255,255,0.08);
+
+        border:2px solid rgba(255,255,255,0.1);
+
+        border-radius:18px;
+
+        padding:30px;
+
+        margin-bottom:25px;
+
+        min-height:140px;
+
+        display:flex;
+
+        justify-content:center;
+
+        align-items:center;
+
+        font-size:2rem;
+
+        font-weight:bold;
+    }
+
+    .actions{
+
+        display:grid;
+
+        grid-template-columns:repeat(2,1fr);
+
+        gap:18px;
+
+        margin-bottom:25px;
+    }
+
+    .action-btn{
+
+        border:none;
+
+        padding:20px;
+
+        border-radius:16px;
+
+        cursor:pointer;
+
+        font-size:1rem;
+
+        font-weight:bold;
+
+        transition:0.2s ease;
+
+        color:white;
+    }
+
+    .action-btn:hover{
+
+        transform:translateY(-2px);
+    }
+
+    .jump{
+        background:#ef4444;
+    }
+
+    .duck{
+        background:#22c55e;
+    }
+
+    .clap{
+        background:#facc15;
+        color:black;
+    }
+
+    .spin{
+        background:#3b82f6;
+    }
+
+    .controls{
+
+        display:flex;
+
+        justify-content:center;
+
+        gap:15px;
+
+        flex-wrap:wrap;
+    }
+
+    .control-btn{
+
+        background:#6366f1;
+
+        color:white;
+
+        border:none;
+
+        padding:14px 24px;
+
+        border-radius:12px;
+
+        cursor:pointer;
+
+        font-size:1rem;
+
+        transition:0.2s;
+    }
+
+    .control-btn:hover{
+
+        background:#7c3aed;
+
+        transform:translateY(-2px);
+    }
+
+    #message{
+
+        margin-top:20px;
+
+        min-height:24px;
+    }
+
+    .timer-bar{
+
+        width:100%;
+
+        height:12px;
+
+        background:rgba(255,255,255,0.1);
+
+        border-radius:999px;
+
+        overflow:hidden;
+
+        margin-bottom:25px;
+    }
+
+    .timer-fill{
+
+        height:100%;
+
+        width:100%;
+
+        background:#22c55e;
+    }
+
+    @media(max-width:600px){
+
+        .actions{
+
+            grid-template-columns:1fr;
+        }
+
+        .command-box{
+
+            font-size:1.5rem;
+        }
+
+        .control-btn{
+
+            width:100%;
+        }
+    }
+
+    </style>
+
+    `;
+}
+
+function initSimonSays() {
+
+    const actions = [
+        "Jump",
+        "Duck",
+        "Clap",
+        "Spin"
+    ];
+
+    let currentAction = "";
+
+    let simonSays = false;
+
+    let score = 0;
+
+    let gameStarted = false;
+
+    let gameSpeed = 3000;
+
+    let timeout;
+
+    const commandBox =
+        document.getElementById("commandBox");
+
+    const scoreText =
+        document.getElementById("score");
+
+    const speedText =
+        document.getElementById("speed");
+
+    const message =
+        document.getElementById("message");
+
+    const timerFill =
+        document.getElementById("timerFill");
+
+    document
+        .getElementById("startBtn")
+        .addEventListener(
+            "click",
+            startGame
+        );
+
+    document
+        .getElementById("restartBtn")
+        .addEventListener(
+            "click",
+            restartGame
+        );
+
+    document
+        .querySelectorAll(".action-btn")
+        .forEach(btn=>{
+
+            btn.addEventListener(
+                "click",
+                ()=>{
+
+                    if(!gameStarted) return;
+
+                    handlePlayerMove(
+                        btn.dataset.action
+                    );
+                }
+            );
+        });
+
+    function startGame(){
+
+        if(gameStarted) return;
+
+        gameStarted = true;
+
+        score = 0;
+
+        gameSpeed = 3000;
+
+        updateUI();
+
+        nextRound();
+    }
+
+    function restartGame(){
+
+        clearTimeout(timeout);
+
+        gameStarted = false;
+
+        commandBox.textContent =
+            "Press Start";
+
+        message.textContent = "";
+
+        timerFill.style.width = "100%";
+
+        scoreText.textContent = "0";
+
+        speedText.textContent = "3s";
+    }
+
+    function nextRound(){
+
+        timerFill.style.transition = "none";
+
+        timerFill.style.width = "100%";
+
+        setTimeout(()=>{
+
+            timerFill.style.transition =
+                `${gameSpeed}ms linear`;
+
+            timerFill.style.width = "0%";
+
+        },50);
+
+        currentAction =
+            actions[
+                Math.floor(
+                    Math.random()*actions.length
+                )
+            ];
+
+        simonSays =
+            Math.random() > 0.4;
+
+        if(simonSays){
+
+            commandBox.textContent =
+                `Simon says ${currentAction}`;
+
+        }else{
+
+            commandBox.textContent =
+                currentAction;
+        }
+
+        timeout = setTimeout(()=>{
+
+            if(simonSays){
+
+                gameOver(
+                    "⏰ Too Slow!"
+                );
+
+            }else{
+
+                message.textContent =
+                    "✅ Correct! You ignored it.";
+
+                score++;
+
+                updateUI();
+
+                if(gameSpeed > 1200){
+
+                    gameSpeed -= 120;
+                }
+
+                setTimeout(()=>{
+
+                    nextRound();
+
+                },700);
+            }
+
+        },gameSpeed);
+    }
+
+    function handlePlayerMove(action){
+
+        clearTimeout(timeout);
+
+        if(
+            simonSays &&
+            action === currentAction
+        ){
+
+            score++;
+
+            message.textContent =
+                "✅ Correct!";
+
+        }else if(
+            !simonSays
+        ){
+
+            gameOver(
+                "❌ Simon didn’t say!"
+            );
+
+            return;
+
+        }else{
+
+            gameOver(
+                "❌ Wrong Action!"
+            );
+
+            return;
+        }
+
+        if(gameSpeed > 1200){
+
+            gameSpeed -= 120;
+        }
+
+        updateUI();
+
+        setTimeout(()=>{
+
+            nextRound();
+
+        },700);
+    }
+
+    function updateUI(){
+
+        scoreText.textContent =
+            score;
+
+        speedText.textContent =
+            `${(gameSpeed/1000).toFixed(1)}s`;
+    }
+
+    function gameOver(text){
+
+        gameStarted = false;
+
+        clearTimeout(timeout);
+
+        message.textContent =
+            `${text} Final Score: ${score}`;
+
+        commandBox.textContent =
+            "💀 Game Over";
+
+        timerFill.style.width = "0%";
+    }
+}
