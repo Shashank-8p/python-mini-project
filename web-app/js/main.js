@@ -28,65 +28,6 @@ function safeRun(fn) {
     try { fn(); } catch (err) { console.error(err); }
 }
 
-themeToggle.addEventListener('click', () => {
-    const currentTheme = html.getAttribute('data-theme');
-    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-
-    html.setAttribute('data-theme', newTheme);
-    localStorage.setItem('theme', newTheme);
-    syncThemeColor(newTheme);
-
-    themeToggle.innerHTML =
-        newTheme === 'light'
-            ? '<i class="fas fa-sun" aria-hidden="true"></i>'
-            : '<i class="fas fa-moon" aria-hidden="true"></i>';
-    updateThemeToggleAria(newTheme === 'light');
-});
-
-const savedTheme = localStorage.getItem('theme') || 'dark';
-html.setAttribute('data-theme', savedTheme);
-syncThemeColor(savedTheme);
-themeToggle.innerHTML =
-    savedTheme === 'light'
-        ? '<i class="fas fa-sun" aria-hidden="true"></i>'
-        : '<i class="fas fa-moon" aria-hidden="true"></i>';
-updateThemeToggleAria(savedTheme === 'light');
-
-
-// Back to Top Button
-const backToTopButton = document.getElementById('backToTop');
-
-const toggleBackToTopButton = () => {
-    backToTopButton.classList.toggle('visible', window.scrollY > 300);
-};
-
-window.addEventListener('scroll', toggleBackToTopButton, { passive: true });
-toggleBackToTopButton();
-
-backToTopButton.addEventListener('click', () => {
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    window.scrollTo({ top: 0, behavior: prefersReducedMotion ? 'auto' : 'smooth' });
-});
-
-// Category Filtering
-const tabs = document.querySelectorAll('.tab');
-
-// Category Filtering (tabs)
-
-const projectCards = document.querySelectorAll('.project-card');
-const gameTabs = document.querySelectorAll('.tab');
-const searchInput = document.getElementById('projectSearch');
-const searchClear = document.getElementById('searchClear');
-const searchDropdown = document.getElementById('searchDropdown');
-const searchShortcut = document.getElementById('searchShortcut');
-const searchLoader = document.getElementById('searchLoader');
-const emptyState = document.getElementById('emptyState');
-const resultsList = document.getElementById('resultsList');
-const resultsSection = document.getElementById('resultsSection');
-const recentSearchesList = document.getElementById('recentSearchesList');
-const recentSearchesSection = document.getElementById('recentSearchesSection');
-const tipsSection = document.getElementById('tipsSection');
-
 // Debounce function for smooth search performance
 function debounce(func, delay) {
     var timeoutId;
@@ -97,38 +38,50 @@ function debounce(func, delay) {
     };
 }
 
-let recentSearches = [];
-
-// Get all matching projects for search query
-function getMatchingProjects(query) {
-    if (!query) return [];
-    
-    const matches = [];
-    projectCards.forEach(card => {
-        const category = card.getAttribute('data-category');
-        const title = card.querySelector('h3').textContent.toLowerCase();
-        const description = card.querySelector('p').textContent.toLowerCase();
-        const tags = (card.getAttribute('data-tags') || '').toLowerCase();
-        
-        const categoryMatch = currentCategory === 'all' || category === currentCategory;
-        const searchMatch = title.includes(query) || 
-                           description.includes(query) || 
-                           tags.includes(query);
-        
-        if (categoryMatch && searchMatch) {
-            const project = {
-                card: card,
-                title: card.querySelector('h3').textContent,
-                tags: card.getAttribute('data-tags') || '',
-                category: category
-            };
-            matches.push(project);
-        }
-    });
-    
-    return matches;
+// Sync the theme-color <meta> tag with the current theme
+function syncThemeColor(theme) {
+    var meta = document.getElementById('themeColorMeta');
+    if (meta) meta.setAttribute('content', theme === 'light' ? '#f0fdf4' : '#0f172a');
 }
 
+document.addEventListener('DOMContentLoaded', function () {
+
+    // ── DOM references ──────────────────────────────────────────────
+    var html = document.documentElement;
+    var themeToggle = document.getElementById('themeToggle');
+    var soundToggle = document.getElementById('soundToggle');
+    var backToTopButton = document.getElementById('backToTop');
+    var tabs = document.querySelectorAll('.tab');
+    var projectCards = Array.from(document.querySelectorAll('.project-card'));
+    var searchInput = document.getElementById('projectSearch');
+    var searchClear = document.getElementById('searchClear');
+    var searchDropdown = document.getElementById('searchDropdown');
+    var searchShortcut = document.getElementById('searchShortcut');
+    var searchLoader = document.getElementById('searchLoader');
+    var emptyState = document.getElementById('emptyState');
+    var resultsList = document.getElementById('resultsList');
+    var resultsSection = document.getElementById('resultsSection');
+    var recentSearchesList = document.getElementById('recentSearchesList');
+    var recentSearchesSection = document.getElementById('recentSearchesSection');
+    var tipsSection = document.getElementById('tipsSection');
+    var noResultsMessage = document.getElementById('noResultsMessage');
+    var modal = document.getElementById('projectModal');
+    var modalBody = document.getElementById('modalBody');
+    var modalClose = document.getElementById('modalClose');
+    var modalTitle = document.getElementById('modalDialogTitle');
+    var randomProjectBtn = document.getElementById('randomProjectBtn');
+    var playgroundSection = document.getElementById('playgroundSection');
+    var projectsSection = document.querySelector('.projects-section');
+
+    var currentCategory = 'all';
+    var currentSearchQuery = '';
+    var playgroundActive = false;
+    var selectedSuggestionIndex = -1;
+    var removeTrap = null;
+    var lastFocusedElement = null;
+    var recentSearches = JSON.parse(localStorage.getItem('recentSearches') || '[]');
+
+    // ── Theme Toggle ────────────────────────────────────────────────
     function updateThemeToggleAria(isLightTheme) {
         if (!themeToggle) return;
         themeToggle.setAttribute(
@@ -192,50 +145,8 @@ function getMatchingProjects(query) {
         window.addEventListener('scroll', toggleBackToTopButton, { passive: true });
         toggleBackToTopButton();
 
-// Render recent searches
-function renderRecentSearches() {
-
-    if (
-        !recentSearchesSection ||
-        !tipsSection ||
-        !resultsSection
-    ) {
-        return;
-    }
-
-    if (recentSearches.length === 0) {
-
-        recentSearchesSection.style.display = 'none';
-        tipsSection.style.display = 'block';
-        resultsSection.style.display = 'none';
-
-        return;
-    }
-
-    recentSearchesSection.style.display = 'block';
-    
-    recentSearchesList.innerHTML = '';
-    recentSearches.slice(0, 5).forEach((search) => {
-        const item = document.createElement('div');
-        item.className = 'dropdown-recent-item';
-        item.innerHTML = `
-            <div class="dropdown-recent-text">
-                <i class="fas fa-history" style="opacity: 0.5; font-size: 0.9rem;"></i>
-                <span style="flex: 1; cursor: pointer; color: var(--text-secondary);">${search}</span>
-            </div>
-            <button class="dropdown-recent-remove" aria-label="Remove search">
-                <i class="fas fa-x"></i>
-            </button>
-        `;
-        
-        const textElement = item.querySelector('span');
-        const removeBtn = item.querySelector('.dropdown-recent-remove');
-        
-        textElement.addEventListener('click', () => {
-            searchInput.value = search;
-            currentSearchQuery = search;
-            performSearch();
-            closeDropdown();
+        backToTopButton.addEventListener('click', function () {
+            window.scrollTo({ top: 0, behavior: prefersReducedMotion() ? 'auto' : 'smooth' });
         });
     }
 
@@ -375,12 +286,12 @@ function renderRecentSearches() {
     }
 
     function highlightText(container, text, query) {
-        const safeQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        const chunks = text.split(new RegExp(`(${safeQuery})`, 'gi'));
+        var safeQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        var chunks = text.split(new RegExp('(' + safeQuery + ')', 'gi'));
 
-        chunks.forEach((part) => {
+        chunks.forEach(function (part) {
             if (part.toLowerCase() === query.toLowerCase()) {
-                const highlight = document.createElement('mark');
+                var highlight = document.createElement('mark');
                 highlight.style.background = 'rgba(99, 102, 241, 0.3)';
                 highlight.style.color = 'var(--primary-color)';
                 highlight.style.fontWeight = '600';
@@ -465,15 +376,15 @@ function renderRecentSearches() {
             recentSearches.slice(0, 5).forEach(function (search) {
                 var item = document.createElement('div');
                 item.className = 'dropdown-recent-item';
-                const recentText = document.createElement('div');
+                var recentText = document.createElement('div');
                 recentText.className = 'dropdown-recent-text';
 
-                const clockIcon = document.createElement('i');
+                var clockIcon = document.createElement('i');
                 clockIcon.className = 'fas fa-history';
                 clockIcon.style.opacity = '0.5';
                 clockIcon.style.fontSize = '0.9rem';
 
-                const searchLabel = document.createElement('span');
+                var searchLabel = document.createElement('span');
                 searchLabel.style.flex = '1';
                 searchLabel.style.cursor = 'pointer';
                 searchLabel.style.color = 'var(--text-secondary)';
@@ -481,17 +392,17 @@ function renderRecentSearches() {
 
                 recentText.append(clockIcon, searchLabel);
 
-                const removeButton = document.createElement('button');
+                var removeButton = document.createElement('button');
                 removeButton.className = 'dropdown-recent-remove';
                 removeButton.setAttribute('aria-label', 'Remove search');
 
-                const removeIcon = document.createElement('i');
+                var removeIcon = document.createElement('i');
                 removeIcon.className = 'fas fa-x';
                 removeButton.appendChild(removeIcon);
 
                 item.append(recentText, removeButton);
 
-                searchLabel.addEventListener('click', () => {
+                searchLabel.addEventListener('click', function () {
                     if (searchInput) {
                         searchInput.value = search;
                         currentSearchQuery = search;
@@ -500,7 +411,7 @@ function renderRecentSearches() {
                     }
                 });
 
-                removeButton.addEventListener('click', (e) => {
+                removeButton.addEventListener('click', function (e) {
                     e.stopPropagation();
                     recentSearches = recentSearches.filter(function (s) { return s !== search; });
                     localStorage.setItem('recentSearches', JSON.stringify(recentSearches));
@@ -537,23 +448,23 @@ function renderRecentSearches() {
             matches.slice(0, 8).forEach(function (project, index) {
                 var item = document.createElement('div');
                 item.className = 'dropdown-item' + (index === selectedSuggestionIndex ? ' selected' : '');
-                const iconEl = project.card.querySelector('.card-icon');
-                const iconText = iconEl ? iconEl.textContent : '';
-                const iconBox = document.createElement('div');
+                var iconEl = project.card.querySelector('.card-icon');
+                var iconText = iconEl ? iconEl.textContent : '';
+                var iconBox = document.createElement('div');
                 iconBox.className = 'dropdown-item-icon';
                 iconBox.textContent = iconText;
 
-                const titleBox = document.createElement('div');
+                var titleBox = document.createElement('div');
                 titleBox.className = 'dropdown-item-text';
                 highlightText(titleBox, project.title, query);
 
-                const categoryTag = document.createElement('span');
+                var categoryTag = document.createElement('span');
                 categoryTag.className = 'dropdown-item-tag';
                 categoryTag.textContent = project.category;
 
                 item.append(iconBox, titleBox, categoryTag);
-                item.addEventListener('click', () => selectSuggestion(project.title));
-                item.addEventListener('mouseenter', () => {
+                item.addEventListener('click', function () { selectSuggestion(project.title); });
+                item.addEventListener('mouseenter', function () {
                     selectedSuggestionIndex = index;
                     updateSuggestionHighlight();
                 });
@@ -771,35 +682,22 @@ function renderRecentSearches() {
         } catch (e) { /* ignore */ }
     }
 
+    // ── Explore Button (smooth scroll to projects) ───────────────────
+    var exploreBtn = document.getElementById('exploreBtn');
+    if (exploreBtn) {
+        exploreBtn.addEventListener('click', function () {
+            if (projectsSection) {
+                var reduced = prefersReducedMotion();
+                projectsSection.scrollIntoView({
+                    behavior: reduced ? 'auto' : 'smooth',
+                    block: 'start'
+                });
+                setTimeout(function () {
+                    var firstTab = document.querySelector('.tab');
+                    if (firstTab) firstTab.focus();
+                }, reduced ? 0 : 500);
+            }
+        });
+    }
+
 });
-
-// Smooth scroll to projects section
-const exploreBtn = document.getElementById('exploreBtn');
-if (exploreBtn) {
-    exploreBtn.addEventListener('click', () => {
-        const projectsSection = document.querySelector('.projects-section');
-        if (projectsSection) {
-            const prefersReducedMotionValue = prefersReducedMotion();
-            projectsSection.scrollIntoView({
-                behavior: prefersReducedMotionValue ? 'auto' : 'smooth',
-                block: 'start'
-            });
-            // Focus on the projects section after scrolling
-            setTimeout(() => {
-                const firstTab = document.querySelector('.tab');
-                if (firstTab) firstTab.focus();
-            }, prefersReducedMotionValue ? 0 : 500);
-        }
-    });
-}
-
-// Accessibility helper referenced by modal code
-function setMainInert(isInert) {
-    const main = document.getElementById('main-content');
-    if (!main) return;
-    if (isInert) main.setAttribute('inert', ''); else main.removeAttribute('inert');
-}
-
-let lastFocusedElement = null;
-
-// End of file (single coherent main.js implementation above)
