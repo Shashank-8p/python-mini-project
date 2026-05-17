@@ -201,7 +201,18 @@ python math/AP-GP-AGP-HP-Recognizer/AP-GP-AGP-HP-Recognizer.py
 ```
 
 </td>
-<td width="50%"></td>
+<td width="50%">
+
+#### 🃏 BlackJack (21)
+Beat the dealer in this classic card game!
+- 🎴 Play against a simulated dealer
+- 🧠 Dynamic Ace logic (1 or 11)
+- 🎲 Interactive hit or stand gameplay
+```bash
+python "games/blackjack(21)/blackjack(21).py"
+```
+
+</td>
 </tr>
 </table>
 

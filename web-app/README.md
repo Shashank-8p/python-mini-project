@@ -17,6 +17,7 @@ An interactive web application showcasing Python mini projects with beautiful vi
 - **Dice Rolling** - 3D rolling animation with realistic dice faces
 - **Coin Flip** - Spinning coin with heads/tails statistics
 - **Number Guessing** - Interactive guessing with smart hints
+- **BlackJack (21)** - Play against the dealer with dynamic card rendering
 - **Hangman** - Classic word game (Coming Soon)
 - **FLAMES** - Relationship calculator (Coming Soon)
 
