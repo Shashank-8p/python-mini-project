@@ -22,9 +22,7 @@ while True:
             continue
 
         print("🪙 Flipping...")
-        time.sleep(2)  # Realistic delay
-
-        # Random toss using randint (same as before)
+        time.sleep(2)
 
         total_tosses += 1
 
@@ -47,7 +45,7 @@ while True:
     elif choice == "n":
         print("👋 Thanks for playing! See you next time!\n")
 
-        # Final Game Summary
+        # Game Summary
         print("📊 GAME SUMMARY 📊")
         print(f"🪙 Total Tosses: {total_tosses}")
         print(f"👑 Heads Count: {heads_count}")
