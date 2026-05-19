@@ -149,4 +149,4 @@ Made with ❤️ for learners everywhere!
 
 ---
 
-**Enjoy exploring Python concepts through interactive web visualizations!** 🚀
+Thank you for contributing to Python Mini Projects Web Edition!

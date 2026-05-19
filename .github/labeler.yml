@@ -1,0 +1,50 @@
+documentation:
+  - '**/*.md'
+  - 'docs/**'
+
+python:
+  - '**/*.py'
+
+github-actions:
+  - '.github/**'
+
+enhancement:
+  - 'src/**'
+  - '*/**.py'
+
+beginner:
+  - '**/*.md'
+
+intermediate:
+  - '**/*.py'
+
+advanced:
+  - '.github/**'
+  - 'tests/**'
+
+"type:design":
+  - 'web-app/**'
+  - 'web-app/*.html'
+  - 'web-app/js/**'
+  - 'web-app/css/**'
+
+"type:feature":
+  - '**/*.py'
+
+"type:docs":
+  - '**/*.md'
+  - 'README.html'
+  - 'docs/**'
+
+"type:devops":
+  - '.github/**'
+  - '.github/workflows/**'
+
+"type:refactor":
+  - '**/*.py'
+  - 'web-app/**'
+
+"type:bug":
+  - '**/*.py'
+  - 'tests/**'
+

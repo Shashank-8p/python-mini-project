@@ -32,7 +32,7 @@ git clone https://github.com/YOUR_USERNAME/python-mini-project.git
 cd python-mini-project
 
 # Add upstream remote
-git remote add upstream https://github.com/ORIGINAL_OWNER/python-mini-project.git
+git remote add upstream https://github.com/steam-bell-92/python-mini-project.git
 ```
 
 ### 2. Create a Branch
@@ -69,6 +69,7 @@ git push origin feature/your-project-name
 
 # Go to GitHub and create a Pull Request
 ```
+
 
 ---
 
@@ -108,7 +109,7 @@ print("\n👋 Thanks for playing!\n")
 
 ### ✅ Web App Projects - Structure
 
-For web implementation, add to `web-app/js/projects.js`:
+For web implementation, add to `web-app/js/projects/your-project-name.js`:
 
 ```javascript
 // 1. HTML Template Function
@@ -136,7 +137,7 @@ function initYourProject() {
     });
 }
 
-// 3. Register in getProjectHTML() and initializeProject()
+// 3. Register in getProjectHTML() and initializeProject() in `web-app/js/projects.js`
 ```
 
 ### ✅ Web App Projects - Guidelines
@@ -264,6 +265,21 @@ Found a bug? Help us improve!
 
 ---
 
+## 🏷️ Issue Levels
+
+We label issues by difficulty and type to help contributors find the right tasks. Use these levels when filing or triaging issues.
+
+- **beginner** — Great for new contributors. Small, well-scoped tasks with clear instructions (good-first-issue / easy fixes).
+- **intermediate** — Requires some familiarity with the codebase and minor design/logic changes.
+- **advanced** — Involves architecture, refactoring, or larger feature work.
+- **bug** — A reproducible defect; include steps to reproduce and an expected vs actual description.
+- **enhancement** — A non-critical improvement or new feature request.
+- **documentation** — Docs, examples, or README updates.
+- **design** — Changes to UI, web-app visuals, or user experience.
+
+When creating an issue, add one difficulty label (`beginner`, `intermediate`, or `advanced`) and one type label (`type:bug`, `type:feature`, `type:docs`, `type:design`, `type:devops`, `type:refactor`) where appropriate.
+
+
 ## 💡 Suggesting Features
 
 Have an idea? We'd love to hear it!
@@ -298,14 +314,6 @@ Have an idea? We'd love to hear it!
 - **Testing**: How you tested it (Python + Web if applicable)
 - **Screenshots**: If UI changes (especially for web app)
 
-### Example PR Title
-
-- ✅ Good: `Add: Hangman game with emoji UI and web version`
-- ✅ Good: `Fix: Dice roller emoji display bug in web app`
-- ✅ Good: `Enhance: Add dark mode toggle to web interface`
-- ❌ Bad: `Update`
-- ❌ Bad: `Fixed stuff`
-
 ---
 
 ## ⚡ Quick Tips
@@ -329,6 +337,115 @@ New to contributing? Check these out:
 - [Emoji Cheat Sheet](https://github.com/ikatyang/emoji-cheat-sheet)
 
 ---
+## Issue Difficulty Levels
+
+To make contributing easier for everyone, we use difficulty labels for issues.  
+These labels help contributors understand how much experience or effort an issue may require before getting started.
+
+---
+
+### level: Beginner
+
+Good for first-time contributors or people who are still learning the project structure.
+
+#### What to Expect
+- Small and simple changes
+- Easy to understand
+- Usually does not require deep project knowledge
+
+#### Criteria
+- Minor bug fixes
+- Simple documentation updates
+- Small UI/text changes
+- Basic code cleanup
+
+#### Example Issues
+- Fix spelling mistakes in documentation
+- Improve README formatting
+- Rename variables for better readability
+- Add comments to simple functions
+- Update broken links
+
+---
+
+### level: Intermediate
+
+Best for contributors who are comfortable reading and understanding the codebase.
+
+#### What to Expect
+- Moderate coding tasks
+- Requires understanding of project flow
+- May involve working across multiple files
+
+#### Criteria
+- Feature improvements
+- Refactoring existing code
+- Writing tests
+- Fixing medium-level bugs
+
+#### Example Issues
+- Add validation to forms or APIs
+- Improve performance of an existing feature
+- Write unit tests for modules
+- Refactor repeated code into reusable functions
+- Improve error handling
+
+---
+
+### level: Advanced
+
+Recommended for experienced contributors who understand the architecture of the project.
+
+#### What to Expect
+- Complex tasks
+- Requires strong debugging and problem-solving skills
+- May involve major feature development or architectural changes
+
+#### Criteria
+- Large feature implementations
+- System design changes
+- Complex bug fixes
+- Multi-module updates
+    
+#### Example Issues
+- Design and implement a new module
+- Optimize database or backend architecture
+- Handle complex state management
+- Integrate third-party services
+- Major performance optimization tasks
+
+---
+
+### level:  Critical
+
+For high-priority or highly sensitive tasks that may impact important parts of the project.
+
+#### What to Expect
+- Requires strong technical understanding
+- May affect security, stability, or core functionality
+- Needs careful testing and review
+
+#### Criteria
+- Security-related fixes
+- Critical production bugs
+- Core architecture updates
+- High-impact system improvements
+
+#### Example Issues
+- Fix authentication vulnerabilities
+- Resolve major backend crashes
+- Improve core system reliability
+- Handle critical deployment issues
+- Refactor sensitive infrastructure code
+
+---
+
+## Recommendation for New Contributors
+
+If you are contributing for the first time, we strongly recommend starting with **level: Beginner** issues.  
+These tasks are beginner-friendly and help you understand the project structure, contribution workflow, and coding style before moving to more advanced issues.
+
+Once you feel comfortable, you can gradually try `level:intermediate`, `level:advanced`, and `level:critical` tasks.
 
 ## 🤔 Questions?
 

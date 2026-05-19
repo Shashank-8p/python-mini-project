@@ -1,0 +1,129 @@
+name: contributor automation
+
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  pull_request_target:
+    types: [closed]
+    branches:
+      - main
+
+# Prevent multiple runs from overlapping and causing commit conflicts
+concurrency:
+  group: contributor-automation
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  update-readme:
+    # Security: pull_request_target runs in the context of the base repo.
+    # We only run if the event is a schedule or a merged PR.
+    if: github.event_name == 'schedule' || (github.event_name == 'pull_request_target' && github.event.pull_request.merged == true)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Base Repository
+        uses: actions/checkout@v4
+        with:
+          # Security: Explicitly checkout the base repository's default branch.
+          # This ensures we are running trusted code from the main repo, not the fork.
+          ref: ${{ github.event.repository.default_branch }}
+          fetch-depth: 0
+
+      - name: Fetch Contributors (Paginated)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          
+          echo "[]" > contributors.json
+          PAGE=1
+          
+          echo "Fetching contributors from GitHub API..."
+          while true; do
+            # Scaling: Handle pagination to fetch all contributors.
+            # Security: Using standard GH API with Linux timeout utility.
+            timeout 30s gh api "/repos/${{ github.repository }}/contributors?per_page=100&page=${PAGE}" > "response_${PAGE}.json" || {
+              echo "API call failed or timed out. Retrying once..."
+              sleep 5
+              timeout 60s gh api "/repos/${{ github.repository }}/contributors?per_page=100&page=${PAGE}" > "response_${PAGE}.json"
+            }
+            
+            COUNT=$(jq '. | length' "response_${PAGE}.json")
+            if [ "$COUNT" -eq 0 ]; then break; fi
+            
+            # Merge and filter out bots
+            jq -s '.[0] + [.[1][] | select(.type != "Bot")]' contributors.json "response_${PAGE}.json" > tmp.json && mv tmp.json contributors.json
+            
+            if [ "$COUNT" -lt 100 ]; then break; fi
+            PAGE=$((PAGE + 1))
+          done
+          
+          # Extract only unique logins
+          jq -r '.[] | .login' contributors.json | sort -u > contributor_logins.txt
+
+      - name: Build Professional Contributor Grid
+        run: |
+          set -euo pipefail
+          
+          # UI: Professional 6-column HTML grid with avatars
+          echo "<table border=\"0\">" > gallery.html
+          echo "  <tr>" >> gallery.html
+          
+          COL=0
+          while IFS= read -r USERNAME; do
+            if [ "$COL" -eq 6 ]; then
+              echo "  </tr>" >> gallery.html
+              echo "  <tr>" >> gallery.html
+              COL=0
+            fi
+            
+            echo "    <td align=\"center\" width=\"120\">" >> gallery.html
+            echo "      <a href=\"https://github.com/${USERNAME}\">" >> gallery.html
+            echo "        <img src=\"https://github.com/${USERNAME}.png?size=100\" width=\"100\" height=\"100\" style=\"border-radius:50%; border:2px solid #555;\" alt=\"${USERNAME}\" /><br />" >> gallery.html
+            echo "        <sub><b>@${USERNAME}</b></sub>" >> gallery.html
+            echo "      </a>" >> gallery.html
+            echo "    </td>" >> gallery.html
+            
+            COL=$((COL + 1))
+          done < contributor_logins.txt
+          
+          # Fill remaining empty cells to maintain grid structure
+          while [ "$COL" -lt 6 ] && [ "$COL" -gt 0 ]; do
+             echo "    <td width=\"120\"></td>" >> gallery.html
+             COL=$((COL + 1))
+          done
+          
+          echo "  </tr>" >> gallery.html
+          echo "</table>" >> gallery.html
+
+      - name: Update README.md
+        run: |
+          set -euo pipefail
+          
+          # Verify markers exist before modification
+          if ! grep -q "<!-- CONTRIBUTORS_START -->" README.md || ! grep -q "<!-- CONTRIBUTORS_END -->" README.md; then
+            echo "Error: Markers missing in README.md"
+            exit 1
+          fi
+
+          # Surgical replacement using markers
+          sed -n '1,/<!-- CONTRIBUTORS_START -->/p' README.md > README.new
+          cat gallery.html >> README.new
+          sed -n '/<!-- CONTRIBUTORS_END -->/,$p' README.md >> README.new
+          mv README.new README.md
+
+      - name: Commit and Push
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add README.md
+          
+          if git diff --staged --quiet; then
+            echo "No changes to README."
+          else
+            # Permissions: Using the GITHUB_TOKEN's write authority
+            git commit -m "docs: update contributor gallery [skip ci]"
+            git push origin HEAD:${{ github.event.repository.default_branch }}
+          fi

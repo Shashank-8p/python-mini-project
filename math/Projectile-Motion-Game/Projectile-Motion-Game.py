@@ -5,6 +5,7 @@ import time
 try:
     import numpy as np
     import matplotlib.pyplot as plt
+    from matplotlib.animation import FuncAnimation
 except ImportError:
     print("❌ This project requires numpy and matplotlib.")
     print("Install them using: pip install numpy matplotlib")
@@ -39,31 +40,40 @@ def projectile_stats(speed, angle_deg):
 
 
 def trajectory_points(speed, angle_deg, point_count=350):
+    angle_rad = math.radians(angle_deg)
     flight_time, _, _ = projectile_stats(speed, angle_deg)
+
     if flight_time <= 0:
         return np.array([0.0]), np.array([0.0]), flight_time
 
-    angle_rad = math.radians(angle_deg)
     t = np.linspace(0, flight_time, point_count)
-    x = speed * math.cos(angle_rad) * t
-    y = speed * math.sin(angle_rad) * t - 0.5 * GRAVITY * (t ** 2)
+    x = speed * np.cos(angle_rad) * t
+    y = speed * np.sin(angle_rad) * t - (0.5 * GRAVITY * t ** 2)
     y = np.maximum(y, 0)
     return x, y, flight_time
 
 
 def show_plot(x, y):
-    plt.figure(figsize=(10, 6))
-    plt.plot(x, y, color="#0078D7", linewidth=2.2, label="Projectile Path")
-    plt.scatter([x[-1]], [0], color="#D7263D", s=70, label="Landing Point")
+    fig, ax = plt.subplots()
+    max_limit = max(max(x), max(y)) * 1.1
+    ax.set_xlim(0, max_limit)
+    ax.set_ylim(0, max_limit)
 
-    plt.title("Projectile Motion Simulator")
-    plt.xlabel("Horizontal Distance (m)")
-    plt.ylabel("Vertical Height (m)")
-    plt.grid(alpha=0.3)
-    plt.ylim(bottom=0)
-    plt.xlim(left=0)
-    plt.legend()
-    plt.tight_layout()
+    ax.set_title("Projectile Motion Simulator")
+    ax.set_xlabel("Horizontal Distance (m)")
+    ax.set_ylabel("Vertical Height (m)")
+    ax.grid()
+    line, = ax.plot([], [], color="#0078D7", linewidth=2.2, label="Projectile Path")
+    point, = ax.plot([], [], 'ro')
+    def update(frame):
+        if frame >= len(x):
+            return line, point
+        line.set_data(x[:frame], y[:frame])
+        point.set_data([x[frame-1]], [y[frame-1]])
+        return line, point
+    
+    ani = FuncAnimation(fig, update, frames=len(x), interval=16, blit=False, repeat=False)
+    
     plt.show()
 
 
