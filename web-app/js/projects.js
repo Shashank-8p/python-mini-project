@@ -1,4 +1,4 @@
-﻿// Project Registry
+// Project Registry
 // Each project's HTML and logic lives in its own file under js/projects/
 
 function getProjectHTML(projectName) {
@@ -7,7 +7,7 @@ function getProjectHTML(projectName) {
         'rock-paper-scissor': () => getRockPaperScissorHTML(),
         'dice-rolling': () => getDiceRollingHTML(),
         'coin-flip': () => getCoinFlipHTML(),
-        'blackjack(21)' : () => getBlackjackHTML(),
+        'blackjack-21': () => getBlackjackHTML(),
         'number-guessing': () => getNumberGuessingHTML(),
         'hangman': () => getHangmanHTML(),
         'word-scramble': () => getWordScrambleHTML(),
@@ -54,7 +54,7 @@ function initializeProject(projectName) {
         'rock-paper-scissor': initRockPaperScissor,
         'dice-rolling': initDiceRolling,
         'coin-flip': initCoinFlip,
-        'blackjack(21)' : initBlackjack,
+        'Blackjack-21' : initBlackjack,
         'number-guessing': initNumberGuessing,
         'hangman': initHangman,
         'flames': initFlames,

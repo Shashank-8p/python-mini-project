@@ -8,14 +8,14 @@ This folder contains beginner-friendly Python mini games. Each game is self-cont
 - Dots-Boxes-AI
 - Emoji-Memory-Game
 - FLAMES-Game
-- Flipping-toss
+- Flipping-Toss
 - Hangman-Game
 - Number-Guessing-Game
-- Number-Sliding_puzzle
+- Number-Sliding-Puzzle
 - Password-Forge
 - Reverse-Hangman-Game
 - Rock-Paper-Scissor
-- Roling-Dice
+- Rolling-Dice
 - Simon-Says
 - Snake-Game
 - Tic-Tac-Toe
