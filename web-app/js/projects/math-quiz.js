@@ -221,6 +221,13 @@ function initMathQuiz() {
 
         let question, correct;
 
+        // fixedOptions: when a question type has a known, constrained set of valid
+        // answers (e.g. prime uses only 1 or 2)we attach the exact options here
+        // so showQuestion() skips generateOptions() which would produce arbitrary
+        // nearby numbers that are meaningless for the question being asked.
+        let fixedOptions = null;
+
+
         if (type === 'add') {
             const [a, b] = [rand(1, 60), rand(1, 60)];
             question = `${a} + ${b} = ?`;
@@ -275,6 +282,11 @@ function initMathQuiz() {
             const num = rand(10, 50);
             question = `Is ${num} prime? (1 = Yes, 2 = No)`;
             correct = isPrime(num) ? 1 : 2;
+
+            // the only valid answers are 1 (yes) or 2 (no). using generateOptions()
+            // here would fill the remaining 2 slots with random nearby integers
+            // (e.g. 13, 11, 3) that are irrelevant and confusing.  
+            fixedOptions = [1, 2];
 
         } else if (type === 'conversion') {
             const kind = rand(0, 2);
@@ -416,8 +428,12 @@ function initMathQuiz() {
         if (streak >= 6 && difficulty < 3) difficulty = 3;
         else if (streak >= 3 && difficulty < 2) difficulty = 2;
 
-        const { question, correct } = generateQuestion(difficulty);
-        const options = generateOptions(correct);
+        const { question, correct, fixedOptions } = generateQuestion(difficulty);
+        
+        // use fixedOptions when the question has a constrained answer domain
+        // (e.g. prime Yes/No); otherwise generate plausible numeric distractors.
+        const options = fixedOptions ? fixedOptions : generateOptions(correct);
+        
         const correctIdx = options.indexOf(correct);
 
         board.innerHTML = `<p class="quiz-question">❓ ${question}</p>`;
