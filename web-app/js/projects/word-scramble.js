@@ -2,7 +2,6 @@
 // WORD SCRAMBLE GAME
 // ============================================
 
-console.log('📝 Word Scramble loaded - Version with Timer');
 
 function getWordScrambleHTML() {
     console.log('🎨 Generating Word Scramble HTML');

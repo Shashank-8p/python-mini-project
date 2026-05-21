@@ -37,18 +37,18 @@ const H = () => canvas.offsetHeight;
 
 /* ── Colour palette (pastel greens) ── */
 const C = {
-    boardLight: '#d6f2e0',
-    boardDark:  '#c1e9cf',
-    gridLine:   'rgba(19,107,66,0.12)',
-    snakeBody:  '#e95d5d',
-    snakeHead:  '#c0392b',
-    ladderRail: '#c07c1c',
-    ladderRung: '#e8a830',
-    dice:       'rgba(255,255,255,0.85)',
-    diceDot:    '#1e8a58',
-    token1:     '#4cbe8a',
-    token2:     '#f0a500',
-    num:        'rgba(19,107,66,0.4)',
+    boardLight: '#fff5e6',
+    boardDark:  '#f6ead7',
+    gridLine:   'rgba(132,97,67,0.12)',
+    snakeBody:  '#f08a6a',
+    snakeHead:  '#d46c4f',
+    ladderRail: '#d19a55',
+    ladderRung: '#f0c47c',
+    dice:       'rgba(255,255,255,0.88)',
+    diceDot:    '#6abf8d',
+    token1:     '#6abf8d',
+    token2:     '#c7a36b',
+    num:        'rgba(132,97,67,0.45)',
 };
 
 /* ── Board geometry ── */
@@ -130,7 +130,7 @@ const diceAnim = { val: 1, t: 0 };
 /* ── Draw board ── */
 function drawBoard() {
     const w = W(), h = H();
-    ctx.fillStyle = '#eaf7ef';
+    ctx.fillStyle = '#fff9f0';
     ctx.fillRect(0, 0, w, h);
 
     for (let row = 0; row < ROWS; row++) {

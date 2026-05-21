@@ -3,8 +3,9 @@ function getTypingSpeedTesterHTML() {
         <style>
             .typing-tester {
                 display: grid;
-                gap: 1.5rem;
-                min-height: 640px;
+                gap: 1rem;
+                min-height: auto;
+                padding: 1rem;
             }
         <div class="project-content">
 
@@ -117,7 +118,7 @@ function getTypingSpeedTesterHTML() {
 
             .typing-tester .hero {
                 display: grid;
-                gap: 1.5rem;
+                gap: 1rem;
                 justify-items: center;
                 text-align: center;
                 max-width: 740px;
@@ -173,21 +174,12 @@ function getTypingSpeedTesterHTML() {
                 color: var(--on-accent);
                 border-color: var(--accent-color);
             }
-    if (
-        !sentenceElement ||
-        !inputElement ||
-        !button ||
-        !newSentenceBtn ||
-        !result
-    ) {
-        return;
-    }
+
 
     let startTime = null;
     let currentSentence = "";
 
-    inputElement.disabled = true;
-    inputElement.setAttribute("aria-disabled", "true");
+
 
             .typing-tester .hero-footer {
                 display: flex;
@@ -235,7 +227,7 @@ function getTypingSpeedTesterHTML() {
             }
 
             .typing-tester .sentence-card {
-                min-height: 140px;
+                min-height: 100px;
                 border-radius: 22px;
                 padding: 1.4rem;
                 background: var(--surface-color);
@@ -315,7 +307,7 @@ function getTypingSpeedTesterHTML() {
                 align-items: center;
                 justify-content: center;
                 border-radius: 999px;
-                padding: 0.95rem 1.7rem;
+                padding: 0.7rem 1.2rem;
                 transition: transform 0.2s ease, box-shadow 0.2s ease;
             }
 
@@ -342,42 +334,44 @@ function getTypingSpeedTesterHTML() {
                 transform: translateY(-2px) scale(0.995);
                 box-shadow: 0 8px 20px rgba(34,197,94,0.14);
             }
-    inputElement.addEventListener("input", function () {
+
 
         if (!startTime || !currentSentence) return;
 
         const typedText = inputElement.value;
         const totalTime = Math.max((Date.now() - startTime) / 1000, 0.001);
 
-            /* Top stats bar */
-            .typing-tester .stats-bar {
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-                gap: 0.75rem;
-                align-items: center;
+        .typing-tester .compact-stats-bar {
+            display: flex;
+            flex-wrap: wrap;
+
+            justify-content: space-evenly;
+            align-items: center;
+
+            padding: 12px 20px;
+            margin-bottom: 1rem;
+
+            background: var(--panel-color);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+
+            font-size: 15px;
+            font-weight: 600;
+        }
+            .typing-tester .compact-stat {
+                white-space: nowrap;
+                padding: 0 18px;
             }
 
-            .typing-tester .stats-bar .stat-item {
-                background: var(--panel-color);
-                border: 1px solid var(--border-color);
-                border-radius: 12px;
-                padding: 0.65rem 0.9rem;
-                display: flex;
-                flex-direction: column;
-                gap: 0.35rem;
-                align-items: center;
-                text-align: center;
-            }
+        .typing-tester .compact-stats-bar span {
+            white-space: nowrap;
+            color: var(--text-color);
+        }
 
-            .typing-tester .stat-item .badge {
-                display: block;
-                color: var(--text-secondary);
-                text-transform: uppercase;
-                letter-spacing: 0.18em;
-                font-size: 0.75rem;
-            }
-
-            .typing-tester .stat-item .stat-value { font-weight: 800; font-size: 1.05rem; color: var(--accent-color); }
+        .typing-tester .compact-stats-bar strong {
+            color: var(--accent-color);
+            font-weight: 700;
+        }
 
             .typing-tester .game-top {
                 display: grid;
@@ -386,7 +380,7 @@ function getTypingSpeedTesterHTML() {
                 text-align: center;
                 margin-bottom: 1.25rem;
             }
-        for (let i = 0; i < spans.length; i++) {
+        
             spans[i].style.color = "";
         }
 
@@ -400,21 +394,29 @@ function getTypingSpeedTesterHTML() {
                 justify-content: center;
             }
 
-            .typing-tester .result-panel {
-                background: var(--panel-color);
-                border: 1px solid var(--border-color);
-                border-radius: 20px;
-                padding: 1.3rem;
-                color: var(--text-color);
-                min-height: 120px;
-                line-height: 1.75;
-                white-space: pre-wrap;
-            }
+.typing-tester .result-summary {
+    line-height: 1.4 !important;
+    padding: 1.2rem !important;
+}
+
+.typing-tester .result-panel {
+    background: var(--panel-color);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    padding: 1rem 1.2rem;
+    color: var(--text-color);
+
+    min-height: auto;
+
+    line-height: 1.3;
+
+    white-space: pre-line;
+}
 
             .typing-tester .stats-grid {
                 display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-                gap: 0.75rem;
+                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+                gap: 0.5rem;
             }
                 if (spans[i]) spans[i].style.color = "#22c55e";
 
@@ -472,18 +474,18 @@ function getTypingSpeedTesterHTML() {
                 </div>
             </section>
 
-            <section class="stage stage-result hidden">
-                <div class="typing-panel">
-                    <div class="sentence-card result-summary" id="resultSummary">
-                        <h3 id="resultMessage">Results</h3>
-                        <div style="margin-top:0.75rem;" id="resultDetails">Final results will appear here.</div>
-                    </div>
-                    <div style="display:flex; gap:0.75rem; margin-top:0.75rem;">
-                        <button id="restartBtn" class="btn-play btn-primary">Restart Test</button>
-                        <button id="retryBtn" class="btn-play btn-secondary">Retry Same Difficulty</button>
-                    </div>
-                </div>
-            </section>
+  <section class="stage stage-result hidden">
+    <div class="typing-panel" style="gap: 0.5rem;">
+        <div class="sentence-card result-summary" id="resultSummary" style="min-height: auto; padding: 1.2rem;">
+            <div id="resultMessage" style="font-size: 24px; font-weight: 800; margin: 0 0 0.5rem 0; line-height: 1.2;">Results</div>
+            <div id="resultDetails" style="margin-top: 0;">Final results will appear here.</div>
+        </div>
+        <div style="display:flex; gap:0.75rem; margin-top: 0.5rem; justify-content: center;">
+            <button id="restartBtn" class="btn-play btn-primary">Restart Test</button>
+            <button id="retryBtn" class="btn-play btn-secondary">Retry Same Difficulty</button>
+        </div>
+    </div>
+</section>
 
             <section class="stage stage-game hidden">
                 <div class="game-top">
@@ -496,13 +498,12 @@ function getTypingSpeedTesterHTML() {
                     </div>
                 </div>
 
-                <div class="game-header stats-bar" role="region" aria-label="Game stats">
-                    <div class="stat-item"><div class="badge">Difficulty</div><div id="headerDifficulty" class="stat-value">Easy</div></div>
-                    <div class="stat-item"><div class="badge">Time</div><div id="timerDisplay" class="stat-value">60s</div></div>
-                    <div class="stat-item"><div class="badge">WPM</div><div id="headerWpm" class="stat-value">0</div></div>
-                    <div class="stat-item"><div class="badge">Accuracy</div><div id="headerAccuracy" class="stat-value">0%</div></div>
-                    <div class="stat-item"><div class="badge">Mistakes</div><div id="headerMistakes" class="stat-value">0</div></div>
-                </div>
+            <div class="compact-stats-bar">
+                <span class="compact-stat">⏱️ Time: <span id="timerDisplay">40s</span></span>
+                <span class="compact-stat">🚀 Speed: <span id="headerWpm">0</span> WPM</span>
+                <span class="compact-stat">🎯 Accuracy: <span id="headerAccuracy">0%</span></span>
+                <span class="compact-stat">❌ Errors: <span id="headerMistakes">0</span></span>
+            </div>
 
                 <div class="typing-panel">
                     <div id="typingSentence" class="sentence-card">Pick a difficulty and start the test.</div>
@@ -690,15 +691,19 @@ function initTypingSpeedTester() {
         if (headerAccuracy) headerAccuracy.textContent = `${finalAccuracy}%`;
         if (headerMistakes) headerMistakes.textContent = finalIncorrect;
 
-        resultMessage.textContent = hasTimedOut ? 'Time is up!' : 'Test completed!';
-        resultDetails.innerHTML = `
-            <strong>Final WPM:</strong> ${finalWpm} <br>
-            <strong>Accuracy:</strong> ${finalAccuracy}% <br>
-            <strong>Total characters typed:</strong> ${finalChars} <br>
-            <strong>Total mistakes:</strong> ${finalIncorrect} <br>
-            <strong>Sentences completed:</strong> ${sentencesCompleted} <br>
-            <strong>Difficulty:</strong> ${formatDifficultyLabel(selectedDifficulty)}
-        `;
+// Remove default margins or native headings completely
+resultMessage.innerHTML = hasTimedOut ? '⏱️ Time is up!' : '🎉 Test completed!';
+
+resultDetails.innerHTML = `
+    <div style="display: flex; flex-direction: column; gap: 0.4rem; padding-top: 0.2rem;">
+        <div><strong>🚀 Final WPM:</strong> ${finalWpm}</div>
+        <div><strong>🎯 Accuracy:</strong> ${finalAccuracy}%</div>
+        <div><strong>⌨️ Total characters typed:</strong> ${finalChars}</div>
+        <div><strong>❌ Total mistakes:</strong> ${finalIncorrect}</div>
+        <div><strong>📖 Sentences completed:</strong> ${sentencesCompleted}</div>
+        <div><strong>⚙️ Difficulty:</strong> ${formatDifficultyLabel(selectedDifficulty)}</div>
+    </div>
+`;
 
         gameStage.classList.add('hidden');
         resultStage.classList.remove('hidden');
@@ -893,9 +898,7 @@ function initTypingSpeedTester() {
             totalWordsTyped += currentStats.words;
             sentencesCompleted += 1;
             generateSentence();
-        inputElement.disabled = true;
-        inputElement.setAttribute("aria-disabled", "true");
-        inputElement.blur();
+
         }
     });
 

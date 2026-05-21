@@ -447,6 +447,27 @@ These tasks are beginner-friendly and help you understand the project structure,
 
 Once you feel comfortable, you can gradually try `level:intermediate`, `level:advanced`, and `level:critical` tasks.
 
+## 🧪 Writing Tests
+
+To maintain code quality and ensure zero external dependencies, we use the standard library's `unittest` framework.
+
+1. **Test Directory**: All tests must be placed in the `tests/` directory at the root of the project.
+2. **File Naming**: Name your test file starting with `test_` (e.g., `test_armstrong.py`).
+3. **No External Modules**: Do not use external libraries like `pytest`. Stick strictly to `unittest`.
+4. **Mocking Inputs**: For CLI projects, use `subprocess` to provide input via `stdin`, or import helper methods directly.
+
+### Running Tests Locally
+To run all tests and verify your changes:
+```bash
+python -m unittest discover -s tests -v
+```
+To run a syntax check across all files (similar to our CI):
+```bash
+find . -name "*.py" -exec python -m py_compile {} +
+```
+
+---
+
 ## 🤔 Questions?
 
 - 💬 Open an issue for questions

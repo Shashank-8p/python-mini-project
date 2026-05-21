@@ -98,20 +98,20 @@ function get2048GameHTML() {
                 }
 
                 .tile {
-    width: 100%;
-    aspect-ratio: 1 / 1;
-    height: auto;
-    background: var(--control-color);
+                    width: 100%;
+                    aspect-ratio: 1 / 1;
+                    height: auto;
+                    background: var(--control-color);
 
-    display: flex;
-    justify-content: center;
-    align-items: center;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
 
-    font-size: clamp(16px, 5vw, 28px);
-    font-weight: bold;
+                    font-size: clamp(16px, 5vw, 28px);
+                    font-weight: bold;
 
-    border-radius: 12px;
-
+                    border-radius: 12px;
+                }
                 /* Right Side Controls Layout */
                 .controls {
                     display: flex;
@@ -437,8 +437,6 @@ function init2048Game() {
         }
     }
 
-    let touchStartX = 0;
-    let touchStartY = 0;
 
     gridContainer.addEventListener('touchstart', e => {
         e.preventDefault();
@@ -446,15 +444,15 @@ function init2048Game() {
         touchStartY = e.changedTouches[0].screenY;
     }, { passive: false });
 
-    gridContainer.addEventListener('touchend', e => {
+        gridContainer.addEventListener('touchend', e => {
         e.preventDefault();
         let touchEndX = e.changedTouches[0].screenX;
         let touchEndY = e.changedTouches[0].screenY;
-        
+
         let dx = touchEndX - touchStartX;
         let dy = touchEndY - touchStartY;
         let moved = false;
-        
+
         if (Math.abs(dx) > Math.abs(dy)) {
             if (dx > 30) moved = moveRight();
             else if (dx < -30) moved = moveLeft();
@@ -468,16 +466,6 @@ function init2048Game() {
             drawBoard();
         }
     }, { passive: false });
-
-    document
-        .getElementById("restart-btn")
-        .addEventListener("click", () => {
-
-    window.addEventListener("mouseup", (e) => {
-        if (!isDragging) return;
-        isDragging = false;
-        handleSwipeEnd(e.clientX, e.clientY);
-    });
 
     createBoard();
 }

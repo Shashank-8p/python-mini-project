@@ -41,7 +41,7 @@ function debounce(func, delay) {
 // Sync the theme-color <meta> tag with the current theme
 function syncThemeColor(theme) {
     var meta = document.getElementById('themeColorMeta');
-    if (meta) meta.setAttribute('content', theme === 'light' ? '#f0fdf4' : '#0f172a');
+    if (meta) meta.setAttribute('content', theme === 'light' ? '#fffdf8' : '#201a18');
 }
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -53,7 +53,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var backToTopButton = document.getElementById('backToTop');
     var tabs = document.querySelectorAll('.tab');
     var projectCards = Array.from(document.querySelectorAll('.project-card'));
-    var searchInput = document.getElementById('projectSearch');
+    var searchInput = document.getElementById('projectSearch') || document.getElementById('searchInput');
     var searchClear = document.getElementById('searchClear');
     var searchDropdown = document.getElementById('searchDropdown');
     var searchShortcut = document.getElementById('searchShortcut');
@@ -75,6 +75,14 @@ document.addEventListener('DOMContentLoaded', function () {
     var stickyFilterBar = document.getElementById('stickyFilterBar');
     var stickyTabs = document.querySelectorAll('.sticky-tab');
     var heroSection = document.querySelector('.hero-section');
+    var cursorGlow = document.getElementById('cursorGlow');
+    var heroTypewriter = document.getElementById('heroTypewriter');
+    var heroProjectCount = document.getElementById('heroProjectCount');
+    var heroGameCount = document.getElementById('heroGameCount');
+    var heroUtilityCount = document.getElementById('heroUtilityCount');
+    var playgroundHeroBtn = document.getElementById('playgroundHeroBtn');
+    var revealItems = document.querySelectorAll('.reveal-on-scroll');
+    var featureLaunchers = document.querySelectorAll('[data-project-target]');
 
     var currentCategory = 'all';
     var currentSearchQuery = '';
@@ -86,9 +94,42 @@ document.addEventListener('DOMContentLoaded', function () {
     //-----------------------project count badge------------------------------------
     const projectCountBadge = document.getElementById("projectCountBadge");
     const projectCount = document.querySelectorAll(".project-card").length;
+    const gameCount = projectCards.filter(function (card) { return card.getAttribute('data-category') === 'games'; }).length;
+    const utilityCount = projectCards.filter(function (card) { return card.getAttribute('data-category') === 'utilities'; }).length;
 
     if (projectCountBadge) {
         projectCountBadge.textContent = `${projectCount} projects`;
+    }
+    if (heroProjectCount) heroProjectCount.textContent = String(projectCount);
+    if (heroGameCount) heroGameCount.textContent = String(gameCount);
+    if (heroUtilityCount) heroUtilityCount.textContent = String(utilityCount);
+
+    var rotatePhrases = [
+        'typing speed drills',
+        'math quiz rounds',
+        'logic puzzle practice',
+        'browser-ready Python wins'
+    ];
+
+    if (heroTypewriter && !prefersReducedMotion()) {
+        var phraseIndex = 0;
+        setInterval(function () {
+            phraseIndex = (phraseIndex + 1) % rotatePhrases.length;
+            heroTypewriter.textContent = rotatePhrases[phraseIndex];
+        }, 2200);
+    }
+
+    if (cursorGlow && !prefersReducedMotion()) {
+        document.addEventListener('pointermove', function (event) {
+            cursorGlow.style.left = event.clientX + 'px';
+            cursorGlow.style.top = event.clientY + 'px';
+        });
+        document.addEventListener('pointerleave', function () {
+            cursorGlow.style.opacity = '0';
+        });
+        document.addEventListener('pointerenter', function () {
+            cursorGlow.style.opacity = '0.5';
+        });
     }
     // ── Theme Toggle ────────────────────────────────────────────────
     function updateThemeToggleAria(isLightTheme) {
@@ -100,13 +141,13 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     if (themeToggle) {
-        var savedTheme = localStorage.getItem('theme') || 'dark';
+        var savedTheme = localStorage.getItem('theme') || 'light';
         html.setAttribute('data-theme', savedTheme);
         syncThemeColor(savedTheme);
         themeToggle.innerHTML =
             savedTheme === 'light'
-                ? '<i class="fas fa-sun" aria-hidden="true"></i>'
-                : '<i class="fas fa-moon" aria-hidden="true"></i>';
+                ? '<img src="assets/sun.svg" alt="" aria-hidden="true" class="theme-icon">'
+                : '<img src="assets/moon.svg" alt="" aria-hidden="true" class="theme-icon">';
         updateThemeToggleAria(savedTheme === 'light');
 
         themeToggle.addEventListener('click', function () {
@@ -119,8 +160,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
             themeToggle.innerHTML =
                 newTheme === 'light'
-                    ? '<i class="fas fa-sun" aria-hidden="true"></i>'
-                    : '<i class="fas fa-moon" aria-hidden="true"></i>';
+                    ? '<img src="assets/sun.svg" alt="" aria-hidden="true" class="theme-icon">'
+                    : '<img src="assets/moon.svg" alt="" aria-hidden="true" class="theme-icon">';
             updateThemeToggleAria(newTheme === 'light');
         });
     }
@@ -150,6 +191,8 @@ document.addEventListener('DOMContentLoaded', function () {
     if (backToTopButton) {
         var toggleBackToTopButton = function () {
             backToTopButton.classList.toggle('visible', window.scrollY > 300);
+            var navbar = document.querySelector('.navbar');
+            if (navbar) navbar.classList.toggle('scrolled', window.scrollY > 12);
         };
         window.addEventListener('scroll', toggleBackToTopButton, { passive: true });
         toggleBackToTopButton();
@@ -703,6 +746,14 @@ if (stickyFilterBar && heroSection) {
     // ── Wire Cards and Play Buttons ───────────────────────────────────
     projectCards.forEach(function (card) {
         var name = card.getAttribute('data-project');
+        var categoryName = card.getAttribute('data-category') || 'project';
+        var metaRow = document.createElement('div');
+        metaRow.className = 'project-card-meta';
+
+        var categoryBadge = document.createElement('span');
+        categoryBadge.className = 'project-card-badge';
+        categoryBadge.textContent = categoryName;
+        metaRow.appendChild(categoryBadge);
 
         var favBtn = document.createElement('button');
         favBtn.className = 'btn-favorite';
@@ -743,6 +794,7 @@ if (stickyFilterBar && heroSection) {
                 openProjectSafe(name, play);
             });
         }
+        card.appendChild(metaRow);
         card.addEventListener('click', function () { openProjectSafe(name, card); });
     });
 
@@ -781,6 +833,47 @@ if (stickyFilterBar && heroSection) {
         randomProjectBtn.addEventListener('click', selectRandomProject);
     }
 
+    if (playgroundHeroBtn) {
+        playgroundHeroBtn.addEventListener('click', function () {
+            var playgroundTab = document.getElementById('playgroundTab');
+            if (playgroundTab) playgroundTab.click();
+        });
+    }
+
+    featureLaunchers.forEach(function (node) {
+        node.addEventListener('click', function (e) {
+            if (e.target.closest('[data-project-target]') === node) {
+                var targetProject = node.getAttribute('data-project-target');
+                if (targetProject) openProjectSafe(targetProject, node);
+            }
+        });
+    });
+
+    if (!prefersReducedMotion()) {
+        projectCards.forEach(function (card) {
+            card.addEventListener('mousemove', function (event) {
+                var rect = card.getBoundingClientRect();
+                var px = (event.clientX - rect.left) / rect.width;
+                var py = (event.clientY - rect.top) / rect.height;
+                var rotateY = (px - 0.5) * 10;
+                var rotateX = (0.5 - py) * 8;
+                card.style.transform = 'perspective(900px) rotateX(' + rotateX + 'deg) rotateY(' + rotateY + 'deg) translateY(-8px)';
+            });
+            card.addEventListener('mouseleave', function () {
+                card.style.transform = '';
+            });
+        });
+
+        var parallaxItems = document.querySelectorAll('[data-parallax]');
+        window.addEventListener('scroll', function () {
+            var scrollY = window.scrollY;
+            parallaxItems.forEach(function (item) {
+                var ratio = parseFloat(item.getAttribute('data-parallax') || '0');
+                item.style.transform = 'translateY(' + Math.round(scrollY * ratio) + 'px)';
+            });
+        }, { passive: true });
+    }
+
     // ── Intersection Observer Animations ─────────────────────────────
     if (!prefersReducedMotion()) {
         try {
@@ -793,6 +886,22 @@ if (stickyFilterBar && heroSection) {
             }, { threshold: 0.1, rootMargin: '0px 0px -100px 0px' });
             projectCards.forEach(function (c) { observer.observe(c); });
         } catch (e) { /* ignore */ }
+    }
+
+    if (!prefersReducedMotion()) {
+        try {
+            var revealObserver = new IntersectionObserver(function (entries, obs) {
+                entries.forEach(function (entry) {
+                    if (!entry.isIntersecting) return;
+                    entry.target.classList.add('is-visible');
+                    obs.unobserve(entry.target);
+                });
+            }, { threshold: 0.2 });
+
+            revealItems.forEach(function (item) { revealObserver.observe(item); });
+        } catch (e) { /* ignore */ }
+    } else {
+        revealItems.forEach(function (item) { item.classList.add('is-visible'); });
     }
 
     // ── Explore Button (smooth scroll to projects) ───────────────────
@@ -875,6 +984,21 @@ function showToast(message) {
             openProjectSafe(projectName, matchingCard);
             matchingCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }, 300); // small delay so the page fully loads first
+    }
+})();
+
+// 4. On page load, check for ?category= param and apply filter
+(function () {
+    var params = new URLSearchParams(window.location.search);
+    var categoryParam = params.get('category');
+    var validCategories = ['all', 'games', 'math', 'utilities', 'playground', 'favorites'];
+    if (!categoryParam || !validCategories.includes(categoryParam)) return;
+
+    var matchingTab = document.querySelector('[data-category="' + categoryParam + '"]');
+    if (matchingTab) {
+        setTimeout(function () {
+            matchingTab.click();
+        }, 100);
     }
 })();
 

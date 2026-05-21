@@ -1,0 +1,31 @@
+name: Python CI Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+        
+    - name: Syntax check with py_compile
+      run: |
+        find . -name "*.py" -exec python -m py_compile {} +
+        
+    - name: Run automated tests
+      run: |
+        python -m unittest discover -s tests -v

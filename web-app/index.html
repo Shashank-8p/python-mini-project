@@ -799,6 +799,7 @@
 <a class="skip-link" href="#main-content">
         🚀 Skip to main content
     </a>
+<div aria-hidden="true" class="cursor-glow" id="cursorGlow"></div>
 <!-- Navigation -->
 <nav aria-label="Primary" class="navbar" id="mainNavbar">
 <div class="nav-island">
@@ -806,17 +807,17 @@
 <div class="navbar-brand">
 <a class="logo-wrap" href="#">
 <!-- LOGO IMAGE -->
-<img alt="PyMini Logo" class="navbar-logo" src="/python-mini-project/images/logo.png"/>
+<img alt="PyMini Logo" class="navbar-logo" src="assets/logo.png"/>
 <!-- TEXT -->
 <div class="logo-text">
-<span class="logo-py">py</span>
-<span class="logo-mini">.mini</span>
-<span class="logo-parens">()</span>
+    <span class="logo-py">py</span>
+    <span class="logo-mini">.mini</span>
+    <span class="logo-parens">()</span>
 </div>
 <!-- SMALL TAGLINE -->
 <span class="logo-tagline">
-                        games, math &amp; terminal toys
-                    </span>
+    games, math &amp; terminal toys
+</span>
 </a>
 </div>
 <!-- CENTER SEARCH -->
@@ -833,95 +834,94 @@
 <button aria-label="Mute sounds" class="sound-toggle" id="soundToggle" type="button">
 <i class="fas fa-volume-up"></i>
 </button>
-<button aria-label="Switch theme" class="theme-toggle" id="themeToggle" type="button">
-<i class="fas fa-moon"></i>
+<button aria-selected="false" class="feature-badge tab" data-category="utilities" role="tab" tabindex="-1">
+<span class="feature-icon"><i data-lucide="lock"></i></span>
+<span class="feature-label">utilities</span>
 </button>
+<button aria-selected="false" class="feature-badge tab" data-category="playground" id="playgroundTab" role="tab" tabindex="-1">
+<span class="feature-icon"><i data-lucide="terminal"></i></span>
+<span class="feature-label">playground</span>
+</button>
+<button class="btn-random-project" id="randomProjectBtn" title="Discover a random project!">
+        launch random →
+    </button>
 </div>
 </div>
+    
+<!-- RIGHT -->
+<div class="nav-controls">
+    <button aria-label="Mute sounds" class="sound-toggle" id="soundToggle" type="button">
+        <i class="fas fa-volume-up"></i>
+    </button>
+    <button aria-label="Switch theme" class="theme-toggle" id="themeToggle" type="button">
+        <i class="fas fa-moon"></i>
+    </button>
+</div>
+
 </nav>
+<!-- CENTER SEARCH -->
+ <div class="search-box-container">
+     <div class="search-box">
+         <i class="fas fa-search"></i>
+         <input aria-label="Search projects" id="searchInput" placeholder="Search projects or games..." type="text"/>
+        </div>
+    </div>
 <!-- ── Sticky Category Filter Bar ─────────────────────────────── -->
 <!-- Appears below navbar when user scrolls past the hero section  -->
-<div aria-label="Project categories (sticky)" class="sticky-filter-bar" id="stickyFilterBar" role="tablist">
-    <div class="sticky-filter-inner">
-        <button aria-selected="true" class="sticky-tab active" data-sticky-category="all" role="tab" tabindex="0">
-            <i aria-hidden="true" data-lucide="layout-grid"></i>
-            <span>all</span>
-        </button>
-        <button aria-selected="false" class="sticky-tab" data-sticky-category="games" role="tab" tabindex="-1">
-            <i aria-hidden="true" data-lucide="gamepad-2"></i>
-            <span>games</span>
-        </button>
-        <button aria-selected="false" class="sticky-tab" data-sticky-category="math" role="tab" tabindex="-1">
-            <i aria-hidden="true" data-lucide="hash"></i>
-            <span>math</span>
-        </button>
-        <button aria-selected="false" class="sticky-tab" data-sticky-category="utilities" role="tab" tabindex="-1">
-            <i aria-hidden="true" data-lucide="lock"></i>
-            <span>utilities</span>
-        </button>
-        <button aria-selected="false" class="sticky-tab" data-sticky-category="playground" role="tab" tabindex="-1">
-            <i aria-hidden="true" data-lucide="terminal"></i>
-            <span>playground</span>
-        </button>
-        <button aria-selected="false" class="sticky-tab" data-sticky-category="favorites" role="tab" tabindex="-1">
-            <i aria-hidden="true" class="fas fa-star"></i>
-            <span>favorites</span>
-        </button>
-    </div>
-</div>
-
 <main id="main-content" tabindex="-1">
     <section class="hero-section" aria-label="Welcome">
+        <canvas aria-hidden="true" id="boardCanvas"></canvas>
         <div class="hero-background"></div>
+        <div aria-hidden="true" class="hero-orb hero-orb-one"></div>
+        <div aria-hidden="true" class="hero-orb hero-orb-two"></div>
+        <div aria-hidden="true" class="hero-code-snippets">
+            <div class="code-snippet snippet-one">for project in library: launch(project)</div>
+            <div class="code-snippet snippet-two">score = accuracy * focus</div>
+            <div class="code-snippet snippet-three">challenge = "typing-speed-tester"</div>
+            <div class="code-snippet snippet-four">print("tiny arcade, huge learning energy")</div>
+            <div class="code-snippet snippet-five">if curiosity &gt; 0: launch_random()</div>
+            <div class="code-snippet snippet-six">favorite_projects.append("math-quiz")</div>
+        </div>
         <div class="container">
-            <div class="hero-content">
-                <h2 class="hero-title">Learn Python the Fun Way!</h2>
-                <p class="hero-subtitle">25+ Mini Projects • Beautiful UI • Beginner Friendly • Zero Dependencies</p>
+            <div class="hero-shell">
+                <div class="hero-content">
+                <div class="hero-kicker">Python arcade for curious beginners</div>
+                <div class="hero-title-wrapper">
+                    <h1 class="hero-title">
+                        <span class="hero-title-line">build tiny python projects</span>
+                        <span class="hero-title-line hero-title-accent">and play in a playful coding aracade</span>
+                    </h1>
+                    <div aria-hidden="true" class="python-orbit">
+                        <div class="python-orbiter">
+                            <span class="python-logo">🐍</span>
+                        </div>
+                    </div>
+                </div>
+                <p class="hero-subtitle">Jump into browser-ready games, math experiments, and utility labs that feel rewarding from the first click.</p>
 
-                <div aria-label="Project categories" class="hero-features" role="tablist">
-                    <button aria-selected="true" class="feature-badge tab active" data-category="all" role="tab" tabindex="0">
-                        <span class="feature-icon"><i data-lucide="layout-grid"></i></span>
-                        <span class="feature-label">all</span>
-                    </button>
-                    <button aria-selected="false" class="feature-badge tab" data-category="games" role="tab" tabindex="-1">
-                        <span class="feature-icon"><i data-lucide="gamepad-2"></i></span>
-                        <span class="feature-label">games</span>
-                    </button>
-                    <button aria-selected="false" class="feature-badge tab" data-category="math" role="tab" tabindex="-1">
-                        <span class="feature-icon"><i data-lucide="hash"></i></span>
-                        <span class="feature-label">math</span>
-                    </button>
-                    <button aria-selected="false" class="feature-badge tab" data-category="utilities" role="tab" tabindex="-1">
-                        <span class="feature-icon"><i data-lucide="lock"></i></span>
-                        <span class="feature-label">utilities</span>
-                    </button>
-                    <!--
-                        PLAYGROUND TAB
-                        data-category="playground" is detected by main.js
-                        and delegates to window.playgroundAPI instead of
-                        running applyCategoryFilter().
-                    -->
-                    <button aria-selected="false" class="feature-badge tab" data-category="playground" id="playgroundTab" role="tab" tabindex="-1">
-                        <span class="feature-icon"><i data-lucide="terminal"></i></span>
-                        <span class="feature-label">playground</span>
-                    </button>
-                    <button aria-selected="false" class="feature-badge tab" data-category="favorites" role="tab" tabindex="-1">
-                        <span class="feature-icon"><i class="fas fa-star"></i></span>
-                        <span class="feature-label">favorites</span>
-                    </button>
+                <div aria-live="polite" class="hero-typing">
+                    <span class="typing-label">Now loading:</span>
+                    <span class="typing-text" id="heroTypewriter">typing speed drills</span>
+                </div>
+                <div class="hero-meta">
+                    <span><strong id="heroProjectCount">0</strong> total projects</span>
+                    <span><strong id="heroGameCount">0</strong> games</span>
+                    <span><strong id="heroUtilityCount">0</strong> utilities</span>
+                </div>
+                <div class="hero-cta-row">
+                    <button class="btn-explore" id="exploreBtn" type="button">Explore the arcade</button>
+                    <button class="btn-secondary-hero" id="playgroundHeroBtn" type="button">Open Python playground</button>
                 </div>
 
-                <button class="btn-random-project" id="randomProjectBtn" title="Discover a random project!">
-                    launch random →
-                </button>
-            </div>
-        </div>
+
     </section>
 
-    <section class="projects-section">
-        <div class="container">
-            <div class="projects-grid">
-                <div class="project-card" data-category="games" data-project="blackjack(21)">
+
+    
+<section class="projects-section">
+    <div class="container">
+        <div class="projects-grid">
+            <div class="project-card" data-category="games" data-project="blackjack(21)">
 <div class="card-icon">🃏</div>
 <h3>BlackJack21</h3>
 <p>Beat the dealer!</p>
@@ -999,12 +999,12 @@
 <h3>Password Forge</h3>
 <p>Survive evolving firewall password rules!</p>
 <button class="btn-play">Try It</button>
-</div><div class="project-card" data-category="games" data-project="math-quiz" data-tags="game,math,quiz,mcq,lives,streak">
+</div><div class="project-card" data-category="games" data-project="math-quiz" data-tags="game,math,quiz,mcq,lives,difficulty">
 <div class="card-icon game-icon-brain">
 <i data-lucide="brain"></i>
 </div>
 <h3>Math Quiz</h3>
-<p>MCQ quiz with lives, streaks &amp; difficulty levels!</p>
+<p>MCQ quiz with lives and difficulty levels!</p>
 <button class="btn-play">Try It</button>
 </div><div class="project-card" data-category="games" data-project="snake-game">
 <div class="card-icon game-icon-snake">

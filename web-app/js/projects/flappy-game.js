@@ -314,12 +314,18 @@ function initFlappyGame() {
     }
 
     function tap(e) {
-        if (e && e.preventDefault) e.preventDefault();
-        if (gameOver) {
-            resetGame();
-        } else {
-            resetGame();
+        if (e && e.preventDefault) {
+            e.preventDefault();
         }
+
+        jump();
+    }
+    function jump() {
+        if (!gameRunning) {
+            startGame();
+        }
+
+        bird.velocity = bird.jumpStrength;
     }
 
     function handleKeyDown(event) {
@@ -334,12 +340,16 @@ function initFlappyGame() {
     canvas.addEventListener('mousedown', tap);
     canvas.addEventListener('touchstart', tap, { passive: false });
 
+
+    function stopGame() {
         if (animationId) {
             cancelAnimationFrame(animationId);
             animationId = null;
         }
+        gameRunning = false;
     }
 
+    console.log(startBtn);
     startBtn.addEventListener("click", function () {
         startScreen.style.display = "none";
         gameScreen.style.display = "flex";
