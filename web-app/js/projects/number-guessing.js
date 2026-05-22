@@ -9,6 +9,8 @@ function getNumberGuessingHTML() {
                     <input type="number" id="guessInput" min="1" max="100" placeholder="Enter your guess">
                     <button class="btn-guess" id="submitGuess">Guess!</button>
                 </div>
+
+                <p class="keyboard-hint">⌨️ Press <kbd>Enter</kbd> to submit your guess</p>
                 
                 <div class="feedback" id="feedback"></div>
                 
@@ -46,7 +48,7 @@ function getNumberGuessingHTML() {
                 display: flex;
                 gap: 1rem;
                 justify-content: center;
-                margin-bottom: 2rem;
+                margin-bottom: 0.75rem;
             }
             
             .guess-input-group input {
@@ -78,6 +80,25 @@ function getNumberGuessingHTML() {
                 cursor: pointer;
                 font-size: 1.2rem;  
             }
+
+            .keyboard-hint {
+                font-size: 0.9rem;
+                color: var(--text-secondary);
+                margin-bottom: 1rem;
+            }
+
+            .keyboard-hint kbd {
+                display: inline-block;
+                padding: 0.15rem 0.45rem;
+                font-size: 0.85rem;
+                font-family: monospace;
+                background: var(--surface-color);
+                border: 1px solid var(--border-color);
+                border-radius: 5px;
+                color: var(--primary-color);
+                font-weight: bold;
+            }
+
             .feedback {
                 font-size: 1.5rem;
                 font-weight: bold;
@@ -128,8 +149,11 @@ function initNumberGuessing() {
     let bestScore = storage.loadFromStorage('numberGuessBest', null);
     updateBestScoreDisplay();
 
+    // Focus input automatically so Enter works right away
+    guessInput.focus();
+
     submitBtn.addEventListener('click', makeGuess);
-    guessInput.addEventListener('keypress', (e) => {
+    guessInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') makeGuess();
     });
     
@@ -144,6 +168,7 @@ function initNumberGuessing() {
         guessInput.value = '';
         guessInput.disabled = false;
         submitBtn.disabled = false;
+        guessInput.focus();
     });
 
     function updateBestScoreDisplay() {

@@ -83,6 +83,8 @@ function getRockPaperScissorHTML() {
                         <span>Scissors</span>
                     </button>
                 </div>
+
+                <p class="keyboard-hint">⌨️ Press <kbd>R</kbd> Rock · <kbd>P</kbd> Paper · <kbd>S</kbd> Scissors</p>
                 
                 <button class="btn-reset" id="resetRPS">Reset Game</button>
             </div>
@@ -235,9 +237,33 @@ function getRockPaperScissorHTML() {
                 border-color: var(--primary-color);
                 box-shadow: 0 5px 20px rgba(99, 102, 241, 0.3);
             }
+
+            .choice-btn.key-active {
+                transform: translateY(-5px);
+                border-color: var(--primary-color);
+                box-shadow: 0 5px 20px rgba(99, 102, 241, 0.3);
+            }
             
             .choice-icon {
                 font-size: 3rem;
+            }
+
+            .keyboard-hint {
+                font-size: 0.9rem;
+                color: var(--text-secondary);
+                margin-bottom: 1rem;
+            }
+
+            .keyboard-hint kbd {
+                display: inline-block;
+                padding: 0.15rem 0.45rem;
+                font-size: 0.85rem;
+                font-family: monospace;
+                background: var(--surface-color);
+                border: 1px solid var(--border-color);
+                border-radius: 5px;
+                color: var(--primary-color);
+                font-weight: bold;
             }
             
             .btn-reset {
@@ -271,6 +297,7 @@ function initRockPaperScissor() {
     
     const choices = ['rock', 'paper', 'scissors'];
     const emojis = { rock: '🪨', paper: '📄', scissors: '✂️' };
+    const keyMap = { r: 'rock', p: 'paper', s: 'scissors' };
     
     const storage = window.appStorage || {
         saveToStorage(key, value) {
@@ -315,6 +342,22 @@ function initRockPaperScissor() {
             playRound(playerChoice);
         });
     });
+
+    // Keyboard shortcut handler
+    function handleKeydown(e) {
+        const key = e.key.toLowerCase();
+        if (keyMap[key]) {
+            const choice = keyMap[key];
+            // Briefly highlight the matching button
+            const matchingBtn = document.querySelector(`.choice-btn[data-choice="${choice}"]`);
+            if (matchingBtn) {
+                matchingBtn.classList.add('key-active');
+                setTimeout(() => matchingBtn.classList.remove('key-active'), 200);
+            }
+            playRound(choice);
+        }
+    }
+    document.addEventListener('keydown', handleKeydown);
     
     resetBtn.addEventListener('click', () => {
         playerScore = 0;
@@ -332,6 +375,15 @@ function initRockPaperScissor() {
             card.classList.remove('selected');
         });
     });
+
+    // Clean up keydown listener when modal closes
+    const observer = new MutationObserver(() => {
+        if (!document.getElementById('resetRPS')) {
+            document.removeEventListener('keydown', handleKeydown);
+            observer.disconnect();
+        }
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
 
     function updateStatsDisplay() {
         gamesPlayedDisplay.textContent = stats.gamesPlayed;

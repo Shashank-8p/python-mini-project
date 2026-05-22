@@ -24,6 +24,8 @@ function getHangmanHTML() {
                 </div>
                 
                 <div class="keyboard" id="keyboard"></div>
+
+                <p class="keyboard-hint">⌨️ Type any letter key to guess directly</p>
                 
                 <div class="game-message" id="gameMessage"></div>
                 
@@ -156,6 +158,11 @@ function getHangmanHTML() {
             .key-btn.wrong {
                 background: var(--danger-color);
             }
+
+            .key-btn.key-flash {
+                transform: scale(1.2);
+                box-shadow: 0 3px 10px rgba(99, 102, 241, 0.6);
+            }
             
             .game-message {
                 font-size: 1.5rem;
@@ -170,6 +177,24 @@ function getHangmanHTML() {
             
             .game-message.lose {
                 color: var(--danger-color);
+            }
+
+            .keyboard-hint {
+                font-size: 0.9rem;
+                color: var(--text-secondary);
+                margin-bottom: 1rem;
+            }
+
+            .keyboard-hint kbd {
+                display: inline-block;
+                padding: 0.15rem 0.45rem;
+                font-size: 0.85rem;
+                font-family: monospace;
+                background: var(--surface-color);
+                border: 1px solid var(--border-color);
+                border-radius: 5px;
+                color: var(--primary-color);
+                font-weight: bold;
             }
             
             .btn-new-game {
@@ -340,11 +365,16 @@ function initHangman() {
         guessedLetters.push(letter);
         
         const btn = keyboard.querySelector(`[data-letter="${letter}"]`);
-        btn.disabled = true;
+        if (btn) {
+            btn.disabled = true;
+            // Flash the button briefly when triggered by keyboard
+            btn.classList.add('key-flash');
+            setTimeout(() => btn.classList.remove('key-flash'), 150);
+        }
         
         if (currentWord.includes(letter)) {
             correctLetters.push(letter);
-            btn.classList.add('correct');
+            btn && btn.classList.add('correct');
             
             updateWordDisplay();
             
@@ -356,7 +386,7 @@ function initHangman() {
             }
         } else {
             wrongAttempts++;
-            btn.classList.add('wrong');
+            btn && btn.classList.add('wrong');
             
             const drawStage = wrongAttempts + 4;
             drawHangman(drawStage);
@@ -368,7 +398,6 @@ function initHangman() {
                 gameMessage.innerHTML = `😔 Game Over! The word was: <strong>${currentWord.toUpperCase()}</strong>`;
                 gameMessage.className = 'game-message lose';
                 disableAllKeys();
-                updateWordDisplay();
                 wordDisplay.innerHTML = '';
                 for (let letter of currentWord) {
                     const letterBox = document.createElement('div');
@@ -400,14 +429,27 @@ function initHangman() {
         initGame();
         drawGallows();
     });
-    
-    document.addEventListener('keypress', (e) => {
+
+    // Keyboard handler — using keydown instead of deprecated keypress
+    function handleKeydown(e) {
         if (gameOver) return;
+        // Ignore if user is typing in an input field
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
         const letter = e.key.toLowerCase();
         if (/^[a-z]$/.test(letter) && !guessedLetters.includes(letter)) {
             guessLetter(letter);
         }
+    }
+    document.addEventListener('keydown', handleKeydown);
+
+    // Clean up listener when modal closes
+    const observer = new MutationObserver(() => {
+        if (!document.getElementById('newGameBtn')) {
+            document.removeEventListener('keydown', handleKeydown);
+            observer.disconnect();
+        }
     });
+    observer.observe(document.body, { childList: true, subtree: true });
     
     initGame();
     drawGallows();
