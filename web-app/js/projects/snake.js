@@ -305,36 +305,8 @@ function restartGame() {
 function initSnakeGame() {
     window.requestAnimationFrame(main);
     
-    // Set initial historic rendering metrics
+    // Set initial rendering metrics
     updateBestScoreUI();
-    function restartGame() {
-    // Hide game over overlay
-    document.getElementById('game-over-overlay').classList.add('hidden');
-
-    // Reset snake
-    snakeArr = [{ x: 13, y: 10 }];
-
-    // Reset score
-    score = 0;
-    document.getElementById('score').innerHTML = score;
-
-    // Reset direction and start moving
-    direction = { x: 1, y: 0 };
-
-    // Generate new food
-    food = {
-        x: Math.round(2 + (16 - 2) * Math.random()),
-        y: Math.round(2 + (16 - 2) * Math.random())
-    };
-
-    // Re-enable difficulty selection before start
-    if (selector) {
-        selector.disabled = true;
-    }
-
-    // Reset frame timing
-    lastPaintTime = 0;
-}
 
     // Map difficulty listener parameters
     const selector = document.getElementById('difficultySelect');
@@ -345,11 +317,7 @@ function initSnakeGame() {
     applyDifficultySettings();
 
     document.getElementById('startGameBtn').addEventListener('click', () => {
-        applyDifficultySettings();
-        // Prevent changing parameter matrices on an active engine run
-        if (selector) selector.disabled = true;
-        document.getElementById('game-over-overlay').classList.add('hidden');
-        direction = { x: 1, y: 0 }; // Start moving right
+        restartGame();
     });
 
     document.getElementById('restartSnakeBtn').addEventListener('click', restartGame);
@@ -357,7 +325,7 @@ function initSnakeGame() {
     document.getElementById('overlayRestartBtn').addEventListener('click', restartGame);
 
     window.addEventListener('keydown', e => {
-        // Change difficulty selection dynamic evaluations if arrow key registers 
+        // Disable difficulty selection once arrow keys are pressed
         if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) {
             if (selector && !selector.disabled) {
                 selector.disabled = true;

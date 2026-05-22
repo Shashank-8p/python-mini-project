@@ -905,7 +905,7 @@
  <div class="search-box-container">
      <div class="search-box">
          <i class="fas fa-search"></i>
-         <input aria-label="Search projects" id="searchInput" placeholder="Search projects or games..." type="text"/>
+         <input aria-label="Search projects" id="heroSearchInput" placeholder="Search projects or games..." type="text"/>
         </div>
     </div>
 <!-- ── Sticky Category Filter Bar ─────────────────────────────── -->
@@ -1450,14 +1450,13 @@ print('Hello, World!')" spellcheck="false"></textarea>
 <script src="js/hero-canvas.js"></script>
 <!-- Search Functionality -->
 <script>
-        const searchInput = document.getElementById("searchInput");
+        const navSearchInput = document.getElementById("searchInput");
+        const heroSearchInput = document.getElementById("heroSearchInput");
 
         // Select all project cards
         const projectCards = document.querySelectorAll(".project-card");
 
-        searchInput.addEventListener("input", () => {
-            const searchValue = searchInput.value.toLowerCase();
-
+        function filterCards(searchValue) {
             projectCards.forEach(card => {
                 const title = card.querySelector("h3").textContent.toLowerCase();
                 const description = card.querySelector("p").textContent.toLowerCase();
@@ -1471,7 +1470,23 @@ print('Hello, World!')" spellcheck="false"></textarea>
                     card.style.display = "none";
                 }
             });
-        });
+        }
+
+        // Sync both search inputs and filter cards
+        if (navSearchInput) {
+            navSearchInput.addEventListener("input", () => {
+                const val = navSearchInput.value.toLowerCase();
+                if (heroSearchInput) heroSearchInput.value = navSearchInput.value;
+                filterCards(val);
+            });
+        }
+        if (heroSearchInput) {
+            heroSearchInput.addEventListener("input", () => {
+                const val = heroSearchInput.value.toLowerCase();
+                if (navSearchInput) navSearchInput.value = heroSearchInput.value;
+                filterCards(val);
+            });
+        }
 
     // Handle Scroll Transitions to resize the floating layout dynamically
     const mainNavbar = document.getElementById("mainNavbar");
