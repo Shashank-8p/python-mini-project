@@ -761,7 +761,7 @@ if (stickyFilterBar && heroSection) {
             if (searchLoader) searchLoader.style.display = query ? 'block' : 'none';
             debouncedSearch(query);
             performSearch();
-            if (query && projectsSection) {
+            if (query && projectsSection && document.activeElement === searchInput) {
                 projectsSection.scrollIntoView({
                     behavior: prefersReducedMotion() ? 'auto' : 'smooth',
                     block: 'start'
@@ -822,18 +822,19 @@ if (stickyFilterBar && heroSection) {
         var modalBody = document.getElementById('modalBody');
         if (!modalContent || !modalBody) return;
 
-        // Reset scroll position to top to avoid viewport clippings during calculations
         modalContent.scrollTop = 0;
         modalBody.scrollTop = 0;
 
-        // Hide scrollbars on the container
-        modalContent.style.overflow = 'hidden';
+        modalContent.style.overflow = 'auto';
 
-        // Reset inline styles to capture natural dimensions
         modalBody.style.transform = '';
         modalBody.style.transformOrigin = '';
-        modalBody.style.width = '';
+        modalBody.style.width = '100%';
         modalBody.style.height = '';
+        modalBody.style.display = 'flex';
+        modalBody.style.flexDirection = 'column';
+        modalBody.style.alignItems = 'stretch';
+        modalBody.style.gap = '1rem';
 
         var targetEl = Array.from(modalBody.children).find(function (el) {
             return el.tagName.toLowerCase() !== 'style';
@@ -842,40 +843,8 @@ if (stickyFilterBar && heroSection) {
 
         targetEl.style.transform = '';
         targetEl.style.transformOrigin = '';
-
-        var computedStyle = window.getComputedStyle(modalContent);
-        var paddingTop = parseFloat(computedStyle.paddingTop) || 32;
-        var paddingBottom = parseFloat(computedStyle.paddingBottom) || 32;
-        var paddingLeft = parseFloat(computedStyle.paddingLeft) || 32;
-        var paddingRight = parseFloat(computedStyle.paddingRight) || 32;
-
-        var availableHeight = modalContent.clientHeight - paddingTop - paddingBottom;
-        var availableWidth = modalContent.clientWidth - paddingLeft - paddingRight;
-
-        var contentHeight = targetEl.scrollHeight;
-        var contentWidth = targetEl.scrollWidth;
-
-        if (contentHeight <= 0 || contentWidth <= 0) return;
-
-        var zoom = 1;
-        var heightZoom = availableHeight / contentHeight;
-        var widthZoom = availableWidth / contentWidth;
-
-        zoom = Math.min(heightZoom, widthZoom);
-        if (zoom > 1) {
-            zoom = 1;
-        }
-
-        // Apply scale transform and origins
-        targetEl.style.transform = 'scale(' + zoom + ')';
-        targetEl.style.transformOrigin = 'top center';
-
-        // Constrain wrapper block size to prevent scroll triggering
-        modalBody.style.height = (contentHeight * zoom) + 'px';
-        modalBody.style.width = '100%';
-        modalBody.style.display = 'flex';
-        modalBody.style.flexDirection = 'column';
-        modalBody.style.alignItems = 'center';
+        targetEl.style.width = '100%';
+        targetEl.style.maxWidth = '100%';
     }
 
     function initModalScaling() {
@@ -997,6 +966,9 @@ if (stickyFilterBar && heroSection) {
             modalBody.style.transformOrigin = '';
             modalBody.style.width = '';
             modalBody.style.height = '';
+            modalBody.style.display = '';
+            modalBody.style.alignItems = '';
+            modalBody.style.gap = '';
         }
         if (lastFocusedElement && typeof lastFocusedElement.focus === 'function') {
             lastFocusedElement.focus({ preventScroll: true });
