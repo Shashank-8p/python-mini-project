@@ -56,22 +56,34 @@ function initWhackaMole() {
         button.className = 'whack-hole';
         button.textContent = '🕳️';
         button.setAttribute('aria-label', `Hole ${index + 1}`);
+
         function handleHit(e) {
             if (e && e.preventDefault) e.preventDefault();
-            if (!gameActive || index !== activeIndex) return;
+            if (!gameActive) return;
+
+            if (index !== activeIndex) {
+                // 🔊 Wrong hole clicked — play miss sound
+                if (window.AudioManager) AudioManager.play('wrong');
+                return;
+            }
+
             score += 1;
             scoreEl.textContent = String(score);
             messageEl.textContent = 'Hit! 🔨';
             button.textContent = '💥';
             button.classList.remove('active');
-            
+
+            // 🔊 Successful mole hit — play thwack sound
+            if (window.AudioManager) AudioManager.play('mole_hit');
+
             // Set to -1 immediately to prevent double hits
             activeIndex = -1;
             lastActiveIndex = -1;
-            
+
             clearTimeout(moleId);
             showMole();
         }
+
         button.addEventListener('mousedown', handleHit);
         button.addEventListener('touchstart', handleHit, { passive: false });
         board.appendChild(button);
@@ -80,28 +92,28 @@ function initWhackaMole() {
 
     function showMole() {
         if (!gameActive) return;
-        
+
         // Save previous active mole state for grace period
         if (activeIndex !== -1) {
             lastActiveIndex = activeIndex;
             lastActiveTime = Date.now();
         }
-        
+
         holes.forEach(hole => {
             hole.classList.remove('active');
             hole.textContent = '🕳️';
         });
-        
+
         // Choose a new hole, ensuring it is different from the current one
         let newIndex;
         do {
             newIndex = Math.floor(Math.random() * holes.length);
         } while (newIndex === activeIndex && holes.length > 1);
-        
+
         activeIndex = newIndex;
         holes[activeIndex].classList.add('active');
         holes[activeIndex].textContent = '🐭';
-        
+
         moleId = setTimeout(showMole, 850);
     }
 
@@ -117,6 +129,10 @@ function initWhackaMole() {
             hole.classList.remove('active');
             hole.textContent = '🕳️';
         });
+
+        // 🔊 Time's up — play game over sound
+        if (window.AudioManager) AudioManager.play('game_over');
+
         messageEl.textContent = finalMessage;
         startBtn.disabled = false;
     }
