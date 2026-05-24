@@ -2962,7 +2962,9 @@ function getTicTacToeHTML() {
     </div>
 
     <!-- Board -->
-    <div class="ttt-board" id="ttt-board">
+    <div style="position:relative;">
+    <div id="ttt-board">
+
       ${[0,1,2,3,4,5,6,7,8].map(i =>
         `<button class="ttt-cell" data-i="${i}" aria-label="Cell ${i+1}"></button>`
       ).join('')}
@@ -2974,7 +2976,7 @@ function getTicTacToeHTML() {
             stroke="var(--ttt-accent)" stroke-width="0.18"
             stroke-linecap="round" opacity="0"/>
     </svg>
-
+</div>
     <!-- Result overlay -->
     <div class="ttt-result-overlay" id="ttt-result-overlay" style="display:none">
       <div class="ttt-result-card">
@@ -3186,7 +3188,7 @@ function initTicTacToe() {
 
   function refreshTurnBanner() {
     const name = current === "X" ? p1 : p2;
-    const sym  = current === "X" ? "❌" : "⭕";
+    const sym  = current === "X" ? "X" : "O";
     const symEl  = document.getElementById("ttt-turn-sym");
     const nameEl = document.getElementById("ttt-turn-name");
     const banner = document.getElementById("ttt-turn-banner");
@@ -3214,7 +3216,7 @@ function initTicTacToe() {
     board[i] = sym;
     const cell = document.querySelector(`.ttt-cell[data-i="${i}"]`);
     if (!cell) return;
-    cell.textContent = sym === "X" ? "❌" : "⭕";
+   cell.textContent = sym;
     cell.classList.add(sym === "X" ? "ttt-cell--x" : "ttt-cell--o");
     cell.disabled = true;
   }
@@ -3299,18 +3301,18 @@ function initTicTacToe() {
   // ── Win-line SVG ──
   // Grid cells are (col, row) 0-indexed; centre of cell = col+0.5, row+0.5
   function drawWinLine(comboIdx) {
-    const line = document.getElementById("ttt-win-line");
-    const svg  = document.getElementById("ttt-win-svg");
-    if (!line || !svg) return;
+  const line = document.getElementById("ttt-win-line");
+  const svg  = document.getElementById("ttt-win-svg");
+  if (!line || !svg) return;
 
-    const [[c1,r1],[c2,r2]] = WIN_COORDS[comboIdx];
-    line.setAttribute("x1", c1 + 0.5);
-    line.setAttribute("y1", r1 + 0.5);
-    line.setAttribute("x2", c2 + 0.5);
-    line.setAttribute("y2", r2 + 0.5);
-    line.setAttribute("opacity", "1");
-    svg.classList.add("ttt-win-svg--visible");
-  }
+  const [[c1,r1],[c2,r2]] = WIN_COORDS[comboIdx];
+  line.setAttribute("x1", c1 + 0.5);
+  line.setAttribute("y1", r1 + 0.5);
+  line.setAttribute("x2", c2 + 0.5);
+  line.setAttribute("y2", r2 + 0.5);
+  line.setAttribute("opacity", "1");
+  svg.classList.add("ttt-win-svg--visible");
+}
 
   function clearWinLine() {
     const line = document.getElementById("ttt-win-line");
