@@ -939,6 +939,10 @@ body.sidebar-active .hero-controls {
   color: #000;
 }
 
+.hidden {
+  display: none !important;
+}
+
 /* ── AI Resume Analyzer ────────────────────────────────────── */
 .resume-analyzer-shell {
   max-width: 960px;
