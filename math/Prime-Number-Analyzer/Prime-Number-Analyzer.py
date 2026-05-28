@@ -8,35 +8,39 @@ while True:
     print("2. Generate prime numbers up to N")
     print("3. Find primes in a range")
     print("4. Prime factorization")
-    print("5. Exit")
-    
-    choice = input("\nEnter your choice (1-5): ")
-    
+    print("5. Find the Nth prime number")
+    print("6. Exit")
+
+    choice = input("\nEnter your choice (1-6): ")
+
     if choice == '1':
         print("\n" + "-" * 50)
         print("CHECK IF A NUMBER IS PRIME")
         print("-" * 50)
         
         try:
+            is_prime = True
             num = int(input("Enter a number: "))
             
             if num < 2:
                 print(f"\n{num} is NOT a prime number.")
                 print("(Prime numbers must be greater than 1)")
             else:
-                is_prime = True
-                divisor = 2
-                
-                while divisor * divisor <= num:
-                    if num % divisor == 0:
-                        is_prime = False
-                        break
-                    divisor += 1
-                
-                if is_prime:
-                    print(f"\n✓ {num} is a PRIME number!")
+                if num == 2:
+                    is_prime = True
+                elif num % 2 == 0:
+                    is_prime = False
                 else:
-                    print(f"\n✗ {num} is NOT a prime number.")
+                    i = 3
+                    while i * i <= num:
+                        if num % i == 0:
+                            is_prime = False
+                            break
+                        i += 2
+                if is_prime:
+                    print(f"\n{num} is a prime number.")
+                else:
+                    print(f"\n{num} is NOT a prime number.")
         
         except ValueError:
             print("Please enter a valid number!")
@@ -52,19 +56,22 @@ while True:
             if limit < 2:
                 print("\nNo prime numbers exist below 2.")
             else:
+                prime = [True] * (limit + 1)
+                prime[0] = prime[1] = False
+
+                p = 2
+
+                while p * p <= limit:
+                    if prime[p]:
+                        multiple = p * p
+
+                        while multiple <= limit:
+                            prime[multiple] = False
+                            multiple += p
+                    p += 1
                 primes = []
-                
                 for num in range(2, limit + 1):
-                    is_prime = True
-                    divisor = 2
-                    
-                    while divisor * divisor <= num:
-                        if num % divisor == 0:
-                            is_prime = False
-                            break
-                        divisor += 1
-                    
-                    if is_prime:
+                    if prime[num]:
                         primes.append(num)
                 
                 print(f"\nPrime numbers up to {limit}:")
@@ -89,23 +96,30 @@ while True:
             
             if start > end:
                 print("\nError: Start must be less than or equal to end!")
+            elif end < 2:
+                print("\nNo prime numbers exist below 2.")
             else:
                 if start < 2:
                     start = 2
                 
+                prime = [True] * (end + 1)
+                prime[0] = prime[1] = False
+
+                p = 2
+
+                while p * p <= end:
+                    if prime[p]:
+                        multiple = p * p
+
+                        while multiple <= end:
+                            prime[multiple] = False
+                            multiple += p
+                    p += 1
+
                 primes = []
-                
+
                 for num in range(start, end + 1):
-                    is_prime = True
-                    divisor = 2
-                    
-                    while divisor * divisor <= num:
-                        if num % divisor == 0:
-                            is_prime = False
-                            break
-                        divisor += 1
-                    
-                    if is_prime:
+                    if prime[num]:
                         primes.append(num)
                 
                 print(f"\nPrime numbers between {start} and {end}:")
@@ -157,12 +171,56 @@ while True:
             print("Please enter a valid number!")
     
     elif choice == '5':
+        print("\n" + "-" * 50)
+        print("FIND THE NTH PRIME NUMBER")
+        print("-" * 50)
+        
+        try:
+            n = int(input("Enter the value of n: "))
+            
+            if n <= 0:
+                print("\nPlease enter a positive number!")
+            else:
+                limit = 100
+
+                while True:
+                    prime = [True] * (limit + 1)
+                    prime[0] = prime[1] = False
+
+                    p = 2
+
+                    while p * p <= limit:
+                        if prime[p]:
+                            multiple = p * p
+
+                            while multiple <= limit:
+                                prime[multiple] = False
+                                multiple += p
+
+                        p += 1
+
+                    primes = []
+
+                    for num in range(2, limit + 1):
+                        if prime[num]:
+                            primes.append(num)
+
+                    if len(primes) >= n:
+                        print(f"\nThe {n}th prime number is: {primes[n - 1]}")
+                        break
+
+                    limit *= 2
+        
+        except ValueError:
+            print("Please enter a valid number!")
+    
+    elif choice == '6':
         print("\n" + "=" * 50)
         print("Thank you for using Prime Number Analyzer!")
         print("=" * 50)
         break
     
     else:
-        print("\nInvalid choice! Please enter a number between 1 and 5.")
+        print("\nInvalid choice! Please enter a number between 1 and 6.")
     
     print("\n" + "=" * 50)

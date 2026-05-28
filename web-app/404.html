@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Page not found — Python Mini Projects Web Edition.">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="color-scheme" content="dark light">
+  <meta id="themeColorMeta" name="theme-color" content="#0f172a">
+  <title>404 — Page Not Found | Python Mini Projects</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary:   #6366f1;
+      --secondary: #8b5cf6;
+      --success:   #10b981;
+      --bg:        #0f172a;
+      --surface:   #1e293b;
+      --text:      #f1f5f9;
+      --muted:     #94a3b8;
+      --border:    #334155;
+    }
+    [data-theme="light"] {
+      --bg:      #f8fafc;
+      --surface: #ffffff;
+      --text:    #0f172a;
+      --muted:   #64748b;
+      --border:  #e2e8f0;
+    }
+
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+    html {
+      width: 100%; height: 100%;
+      overflow: hidden;
+    }
+    body {
+      width: 100%; min-height: 100%;
+      overflow-y: auto; overflow-x: hidden;
+      font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      transition: background .3s, color .3s;
+    }
+
+    /* ── Canvas (behind everything) ── */
+    #fx { position:fixed; inset:0; pointer-events:none; z-index:0; }
+
+    /* ── Navbar ── */
+    .navbar {
+      background: var(--surface);
+      padding: .9rem 0;
+      border-bottom: 2px solid var(--primary);
+      box-shadow: 0 4px 20px rgba(0,0,0,.25);
+      position: relative; z-index: 10;
+    }
+    .nav-inner {
+      max-width: 1200px; margin: 0 auto; padding: 0 1.25rem;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .logo {
+      font-size: 1.4rem; font-weight: 800;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .theme-btn {
+      width:40px; height:40px; border-radius:50%; border:none;
+      background: var(--primary); color:#fff; font-size:1.1rem;
+      cursor:pointer; display:grid; place-items:center;
+      transition: transform .25s, box-shadow .25s;
+    }
+    .theme-btn:hover { transform:scale(1.12); box-shadow:0 0 14px rgba(99,102,241,.5); }
+
+    /* ── Main stage ── */
+    main {
+      flex:1; display:flex; flex-direction:column;
+      align-items:center; justify-content:center;
+      padding: .5rem 1.25rem 5rem;
+      position:relative; z-index:1; overflow:hidden;
+    }
+
+    /* ── Flying rocket (JS-controlled) ── */
+    #rocket {
+      position: fixed;
+      font-size: 3.2rem;
+      line-height: 1;
+      pointer-events: none;
+      z-index: 20;
+      opacity: 0;
+      transform-origin: center center;
+      filter: drop-shadow(0 0 18px rgba(255,140,0,.7));
+      will-change: transform, left, top;
+    }
+
+    /* Rocket placeholder keeps layout space */
+    .rocket-slot {
+      font-size: 3.2rem; line-height:1;
+      visibility: hidden;
+      margin-bottom: .4rem;
+    }
+
+    /* Gentle float after landing */
+    @keyframes floatRocket {
+      0%,100% { transform: translateY(0) rotate(0deg); }
+      40%      { transform: translateY(-13px) rotate(3deg); }
+      70%      { transform: translateY(-8px)  rotate(-2deg); }
+    }
+    .rocket-slot.floating { visibility:visible; animation: floatRocket 3s ease-in-out infinite; }
+
+    /* ── 404 ── */
+    .code-wrap {
+      position:relative; display:inline-block;
+      margin-bottom: .4rem;
+      opacity:0;
+    }
+
+    /* Pulsing aura */
+    .code-wrap::before {
+      content:'';
+      position:absolute; top:50%; left:50%;
+      transform:translate(-50%,-50%);
+      width:320px; height:130px; border-radius:50%;
+      background: radial-gradient(ellipse, rgba(99,102,241,.3) 0%, transparent 70%);
+      animation: aura 3s ease-in-out infinite;
+      pointer-events:none;
+    }
+    @keyframes aura {
+      0%,100% { transform:translate(-50%,-50%) scale(1);    opacity:.5; }
+      50%      { transform:translate(-50%,-50%) scale(1.3);  opacity:1;  }
+    }
+
+    .code-404 {
+      font-size: clamp(4.5rem, 13vw, 8.5rem);
+      font-weight: 900; line-height:1;
+      letter-spacing:-3px;
+      background: linear-gradient(135deg, var(--primary), var(--secondary), #a78bfa, var(--primary));
+      background-size:300% 300%;
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+      background-clip:text;
+      animation: gradShift 5s ease infinite, glitch 6s infinite;
+      position:relative;
+    }
+
+    /* Glitch clones */
+    .code-404::before, .code-404::after {
+      content:'404';
+      position:absolute; top:0; left:0; width:100%; height:100%;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+      background-clip:text;
+    }
+    .code-404::before {
+      clip-path: polygon(0 0, 100% 0, 100% 38%, 0 38%);
+      animation: glitchA 6s infinite;
+    }
+    .code-404::after {
+      clip-path: polygon(0 62%, 100% 62%, 100% 100%, 0 100%);
+      animation: glitchB 6s infinite;
+    }
+
+    @keyframes gradShift {
+      0%,100%{ background-position:0% 50%; }
+      50%    { background-position:100% 50%; }
+    }
+    @keyframes glitch {
+      0%,88%,100% { transform:translate(0); }
+      90% { transform:translate(-4px, 1px) skewX(-2deg); }
+      92% { transform:translate( 4px,-1px) skewX( 2deg); }
+      94% { transform:translate(-2px, 2px); }
+      96% { transform:translate( 2px,-1px); }
+    }
+    @keyframes glitchA {
+      0%,88%,100% { transform:translate(0); opacity:0; }
+      89% { transform:translate(-6px,-2px); opacity:.85; }
+      91% { transform:translate( 5px, 1px); opacity:.6;  }
+      93% { opacity:0; }
+    }
+    @keyframes glitchB {
+      0%,88%,100% { transform:translate(0); opacity:0; }
+      90% { transform:translate( 6px, 2px); opacity:.85; }
+      92% { transform:translate(-5px,-1px); opacity:.6;  }
+      94% { opacity:0; }
+    }
+
+    /* Power-surge reveal for 404 */
+    @keyframes powerSurge {
+      0%   { opacity:0; transform:scale(.15) rotate(-8deg); filter:brightness(0) blur(8px); }
+      45%  { opacity:1; transform:scale(1.12) rotate(1deg);  filter:brightness(5) blur(4px); }
+      65%  { transform:scale(.97) rotate(-.5deg); filter:brightness(1.4) blur(0); }
+      82%  { transform:scale(1.03);               filter:brightness(1.1); }
+      100% { opacity:1; transform:scale(1) rotate(0); filter:brightness(1); }
+    }
+
+    /* ── Traceback box ── */
+    .traceback {
+      background: var(--surface);
+      border:1px solid var(--border);
+      border-left:4px solid var(--primary);
+      border-radius:12px;
+      padding:.8rem 1.4rem;
+      margin:.55rem auto;
+      max-width:540px; width:100%;
+      text-align:left;
+      box-shadow: 0 4px 24px rgba(99,102,241,.12);
+      opacity:0;
+    }
+    .tb-head {
+      font:600 .72rem/1 'JetBrains Mono','Courier New',monospace;
+      color:var(--muted); opacity:.7; margin-bottom:.4rem;
+    }
+    .tb-file {
+      font:400 .82rem/1.5 'JetBrains Mono','Courier New',monospace;
+      color:var(--muted); opacity:.65; margin-bottom:.15rem;
+    }
+    .tb-error {
+      font:700 .98rem/1 'JetBrains Mono','Courier New',monospace;
+      color:#f87171; margin-bottom:.3rem;
+    }
+    .tb-msg  { font:.88rem/1.65 'JetBrains Mono','Courier New',monospace; color:var(--muted); }
+    .tb-hint { font:.83rem/1   'JetBrains Mono','Courier New',monospace; color:var(--success); margin-top:.35rem; }
+
+    /* Blur-slide reveal */
+    @keyframes blurSlide {
+      from { opacity:0; transform:translateY(28px); filter:blur(10px); }
+      to   { opacity:1; transform:translateY(0);    filter:blur(0);    }
+    }
+
+    /* Typing cursor */
+    .cur {
+      display:inline-block; width:2px; height:.95em;
+      background:var(--primary); margin-left:1px;
+      vertical-align:text-bottom;
+      animation: blink .75s step-end infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+    /* ── Button ── */
+    .btn-home {
+      display:inline-flex; align-items:center; gap:.55rem;
+      background:linear-gradient(135deg, var(--primary), var(--secondary));
+      color:#fff; text-decoration:none;
+      padding:.72rem 2.1rem; border-radius:50px;
+      font:.98rem/1 'Segoe UI',sans-serif; font-weight:700;
+      box-shadow: 0 4px 18px rgba(99,102,241,.4);
+      margin-top:.7rem;
+      opacity:0;
+      position:relative; overflow:hidden;
+      transition: transform .25s cubic-bezier(.34,1.56,.64,1), box-shadow .25s;
+    }
+    .btn-home::after {
+      content:'';
+      position:absolute; inset:0;
+      background:linear-gradient(90deg,transparent,rgba(255,255,255,.18),transparent);
+      transform:translateX(-100%);
+      transition:transform .55s ease;
+    }
+    .btn-home:hover { transform:translateY(-3px) scale(1.05); box-shadow:0 8px 28px rgba(99,102,241,.6); }
+    .btn-home:hover::after { transform:translateX(100%); }
+    .btn-home:active { transform:scale(.97); }
+
+    @keyframes springIn {
+      0%   { opacity:0; transform:scale(.2) translateY(24px); }
+      55%  { opacity:1; transform:scale(1.1) translateY(-6px); }
+      75%  { transform:scale(.96) translateY(3px); }
+      90%  { transform:scale(1.03) translateY(-1px); }
+      100% { opacity:1; transform:scale(1) translateY(0); }
+    }
+
+    /* ── Footer ── */
+    footer {
+      background:var(--surface);
+      padding:.85rem 0; text-align:center;
+      border-top:2px solid var(--primary);
+      position:fixed; bottom:0; left:0; width:100%; z-index:10;
+      font-size:.88rem; color:var(--muted);
+    }
+    footer a { color:var(--primary); text-decoration:none; transition:color .2s; }
+    footer a:hover { color:var(--secondary); }
+
+    /* ── Reduced motion ── */
+    @media (prefers-reduced-motion:reduce) {
+      #rocket,
+      .code-wrap, .code-404,
+      .code-404::before, .code-404::after,
+      .traceback, .btn-home, .cur {
+        animation:none !important;
+        opacity:1 !important;
+        transform:none !important;
+        filter:none !important;
+      }
+      .rocket-slot { visibility:visible !important; }
+    }
+
+    /* ── Responsive ── */
+    @media (max-width:600px) {
+      #rocket, .rocket-slot { font-size:2.4rem; }
+      .traceback { padding:.6rem .9rem; }
+      .tb-head,.tb-file,.tb-msg,.tb-hint { font-size:.75rem; }
+      .btn-home { padding:.62rem 1.6rem; font-size:.9rem; }
+      .code-wrap::before { width:200px; height:90px; }
+    }
+    @media (max-height:500px) {
+      html { overflow-y: auto; }
+      main { padding-bottom: 6rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- FX canvas: stars + rocket exhaust -->
+<canvas id="fx" aria-hidden="true"></canvas>
+
+<!-- Flying rocket (JS-positioned) -->
+<span id="rocket" aria-hidden="true">🚀</span>
+
+<!-- Navbar -->
+<nav class="navbar" aria-label="Primary">
+  <div class="nav-inner">
+    <span class="logo">🎮 Python Mini Projects</span>
+    <button id="themeBtn" class="theme-btn" aria-label="Switch to light mode">
+      <i class="fas fa-moon" aria-hidden="true"></i>
+    </button>
+  </div>
+</nav>
+
+<!-- Main -->
+<main id="main" tabindex="-1" aria-label="404 error page">
+
+  <!-- Invisible placeholder keeps layout space for rocket -->
+  <span class="rocket-slot" id="rocketSlot" aria-label="Rocket emoji">🚀</span>
+
+  <!-- 404 -->
+  <div class="code-wrap" id="codeWrap">
+    <div class="code-404" aria-label="404">404</div>
+  </div>
+
+  <!-- Python traceback -->
+  <div class="traceback" id="traceback" role="status" aria-live="polite">
+    <div class="tb-head">Traceback (most recent call last):</div>
+    <div class="tb-file">&nbsp; File "server.py", line 404, in &lt;module&gt;</div>
+    <div class="tb-error">PageNotFoundError<span id="eColon"></span></div>
+    <div class="tb-msg"  id="eMsg"  aria-label="The page you're looking for doesn't exist."></div>
+    <div class="tb-hint" id="eHint" aria-label="Hint: Try navigating back home!"></div>
+  </div>
+
+  <!-- CTA -->
+  <a href="./index.html" class="btn-home" id="btnHome">
+    <i class="fas fa-house" aria-hidden="true"></i> Go Back Home
+  </a>
+
+</main>
+
+<!-- Footer -->
+<footer>
+  <p>Made with ❤️ for Python learners &nbsp;|&nbsp;
+    <a href="https://github.com/steam-bell-92/python-mini-project" target="_blank" rel="noopener noreferrer">
+      <i class="fab fa-github" aria-hidden="true"></i> View on GitHub
+    </a>
+  </p>
+</footer>
+
+<script>
+/* ══════════════════════════════════════════════════
+   1. THEME
+══════════════════════════════════════════════════ */
+const html     = document.documentElement;
+const themeBtn = document.getElementById('themeBtn');
+const metaTheme = document.getElementById('themeColorMeta');
+
+function applyTheme(t) {
+  html.setAttribute('data-theme', t);
+  if(metaTheme) metaTheme.setAttribute('content', t==='light'?'#f8fafc':'#0f172a');
+  themeBtn.innerHTML = t==='light'
+    ? '<i class="fas fa-sun" aria-hidden="true"></i>'
+    : '<i class="fas fa-moon" aria-hidden="true"></i>';
+  themeBtn.setAttribute('aria-label', t==='light'?'Switch to dark mode':'Switch to light mode');
+}
+applyTheme(localStorage.getItem('theme')||'dark');
+themeBtn.addEventListener('click', () => {
+  const n = html.getAttribute('data-theme')==='light'?'dark':'light';
+  localStorage.setItem('theme', n); applyTheme(n);
+});
+
+/* ══════════════════════════════════════════════════
+   2. CANVAS — stars + exhaust particles
+══════════════════════════════════════════════════ */
+const canvas = document.getElementById('fx');
+const ctx    = canvas.getContext('2d');
+let W, H;
+
+// Stars
+const stars = [];
+function buildStars(n) {
+  stars.length = 0;
+  for(let i=0;i<n;i++) stars.push({
+    x: Math.random()*W, y: Math.random()*H,
+    r: Math.random()*1.6+.3,
+    a: Math.random()*.55+.15,
+    sp: Math.random()*.45+.08,
+    ph: Math.random()*Math.PI*2,
+    d: Math.random()*3+1       // parallax depth
+  });
+}
+
+// Exhaust particles
+const exhaust = [];
+function spawnExhaust(x,y,angle) {
+  const spread = .5;
+  for(let i=0;i<4;i++) {
+    const ang = angle + Math.PI + (Math.random()-.5)*spread;
+    const spd = Math.random()*2.5+1;
+    exhaust.push({
+      x, y,
+      vx: Math.cos(ang)*spd,
+      vy: Math.sin(ang)*spd,
+      life: 1,
+      decay: Math.random()*.06+.04,
+      r: Math.random()*4+2,
+      hue: Math.random()*40+20   // orange-yellow
+    });
+  }
+}
+
+let mx=0, my=0;
+window.addEventListener('mousemove', e=>{ mx=e.clientX; my=e.clientY; }, {passive:true});
+
+function resize() {
+  W = canvas.width  = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', ()=>{ resize(); buildStars(150); });
+resize(); buildStars(150);
+
+let frame=0;
+const rm = window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) drawCanvas();
+});
+
+function drawCanvas() {
+  if (document.hidden) return;
+  ctx.clearRect(0,0,W,H);
+  frame += .016;
+  const dark = html.getAttribute('data-theme')!=='light';
+
+  // Stars
+  if(!rm) {
+    stars.forEach(s=>{
+      const px=(mx/W-.5)*s.d*16;
+      const py=(my/H-.5)*s.d*16;
+      const a=s.a*(.55+.45*Math.sin(frame*s.sp+s.ph));
+      ctx.beginPath();
+      ctx.arc(s.x+px, s.y+py, s.r, 0, Math.PI*2);
+      ctx.fillStyle = dark
+        ? `rgba(200,210,240,${a})`
+        : `rgba(99,102,241,${a*.12})`;
+      ctx.fill();
+    });
+  }
+
+  // Exhaust particles
+  for(let i=exhaust.length-1;i>=0;i--) {
+    const p=exhaust[i];
+    p.x += p.vx; p.y += p.vy;
+    p.vy += .08;           // gravity
+    p.life -= p.decay;
+    if(p.life<=0){ exhaust.splice(i,1); continue; }
+    const grad = ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.r);
+    grad.addColorStop(0, `hsla(${p.hue},100%,70%,${p.life})`);
+    grad.addColorStop(1, `hsla(${p.hue},100%,50%,0)`);
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+    ctx.fillStyle=grad;
+    ctx.fill();
+  }
+
+  requestAnimationFrame(drawCanvas);
+}
+drawCanvas();
+
+/* ══════════════════════════════════════════════════
+   3. ROCKET ARC ANIMATION
+   Cubic-bezier arc: off-screen bottom-right → slot
+══════════════════════════════════════════════════ */
+const rocketEl   = document.getElementById('rocket');
+const slotEl     = document.getElementById('rocketSlot');
+const codeWrap   = document.getElementById('codeWrap');
+const traceEl    = document.getElementById('traceback');
+const btnEl      = document.getElementById('btnHome');
+
+if(rm) {
+  // Reduced motion: skip all JS animation
+  rocketEl.style.display='none';
+  slotEl.classList.add('floating');
+  triggerElements();
+} else {
+  // Wait one frame for layout to settle
+  requestAnimationFrame(()=>requestAnimationFrame(startRocketFlight));
+}
+
+function getSlotCenter() {
+  const r = slotEl.getBoundingClientRect();
+  return { x: r.left + r.width/2, y: r.top + r.height/2 };
+}
+
+function cubicBezier(t, p0, p1, p2, p3) {
+  const u=1-t;
+  return {
+    x: u*u*u*p0.x + 3*u*u*t*p1.x + 3*u*t*t*p2.x + t*t*t*p3.x,
+    y: u*u*u*p0.y + 3*u*u*t*p1.y + 3*u*t*t*p2.y + t*t*t*p3.y
+  };
+}
+
+// Custom easing: slow-fast-overshoot-settle
+function easeRocket(t) {
+  // Starts fast, slight overshoot at end
+  if(t<.7) return t/0.7 * t/0.7 * .7;  // ease-in for first 70%
+  const s=(t-.7)/.3;
+  return .7 + .3*(1 - Math.pow(1-s,3)*(Math.cos(s*Math.PI*.5)));
+}
+
+function startRocketFlight() {
+  const target = getSlotCenter();
+
+  // Control points for a dramatic arc (bottom-right → upper-left sweep → target)
+  const p0 = { x: W*1.08,  y: H*1.05 };    // start: off-screen bottom-right
+  const p1 = { x: W*1.0,   y: H*0.05 };    // pull hard upward
+  const p2 = { x: W*0.25,  y: H*0.05 };    // sweep across top
+  const p3 = { x: target.x, y: target.y };  // land at slot
+
+  const DURATION = 1500; // ms
+  let startTime = null;
+  let prevPos = p0;
+
+  rocketEl.style.opacity='1';
+
+  function step(ts) {
+    if(!startTime) startTime=ts;
+    const raw = Math.min((ts-startTime)/DURATION, 1);
+    const t   = easeRocket(raw);
+
+    const pos  = cubicBezier(t, p0, p1, p2, p3);
+    const dPos = cubicBezier(Math.min(t+.01,1), p0, p1, p2, p3);
+
+    // Angle: point rocket in direction of travel
+    const angle = Math.atan2(dPos.y-pos.y, dPos.x-pos.x);
+    const deg   = angle*(180/Math.PI) + 90; // 🚀 emoji points up by default
+
+    rocketEl.style.left = (pos.x - rocketEl.offsetWidth/2)  + 'px';
+    rocketEl.style.top  = (pos.y - rocketEl.offsetHeight/2) + 'px';
+    rocketEl.style.transform = `rotate(${deg}deg)`;
+
+    // Spawn exhaust from rocket tail
+    spawnExhaust(pos.x, pos.y, angle);
+
+    prevPos=pos;
+
+    if(raw < 1) {
+      requestAnimationFrame(step);
+    } else {
+      // Land: hide flying rocket, show slot, trigger rest
+      rocketEl.style.opacity='0';
+      slotEl.classList.add('floating');
+      triggerElements();
+    }
+  }
+  requestAnimationFrame(step);
+}
+
+/* ══════════════════════════════════════════════════
+   4. ELEMENT REVEAL SEQUENCE
+   Triggered after rocket lands
+══════════════════════════════════════════════════ */
+function triggerElements() {
+  // 404 — power surge reveal
+  codeWrap.style.animation='powerSurge .9s cubic-bezier(.22,1,.36,1) both';
+
+  // Traceback — blur slide up
+  setTimeout(()=>{
+    traceEl.style.animation='blurSlide .7s cubic-bezier(.4,0,.2,1) both';
+  }, 750);
+
+  // Button — spring bounce
+  setTimeout(()=>{
+    btnEl.style.animation='springIn .65s cubic-bezier(.34,1.56,.64,1) both';
+  }, 1400);
+
+  // Typing — starts after traceback is visible
+  setTimeout(startTyping, 1500);
+}
+
+/* ══════════════════════════════════════════════════
+   5. TYPING EFFECT
+══════════════════════════════════════════════════ */
+const LINE1  = "The page you're looking for doesn't exist.";
+const LINE2  = "# Hint: Try navigating back home!";
+const COLON  = ": ";
+
+const colonEl = document.getElementById('eColon');
+const msgEl   = document.getElementById('eMsg');
+const hintEl  = document.getElementById('eHint');
+
+function startTyping() {
+  if(rm) {
+    colonEl.textContent=COLON;
+    msgEl.textContent=LINE1;
+    hintEl.textContent=LINE2;
+    return;
+  }
+
+  // shared blinking cursor
+  const cur = Object.assign(document.createElement('span'),{className:'cur'});
+  cur.setAttribute('aria-hidden','true');
+
+  function type(el, text, speed, done) {
+    let i=0;
+    el.textContent='';
+    el.appendChild(cur);
+    const iv=setInterval(()=>{
+      el.insertBefore(document.createTextNode(text[i]),cur);
+      i++;
+      if(i>=text.length){ clearInterval(iv); el.removeChild(cur); done&&done(); }
+    }, speed);
+  }
+
+  type(colonEl, COLON, 70, ()=>{
+    setTimeout(()=>{
+      type(msgEl, LINE1, 32, ()=>{
+        setTimeout(()=>{
+          type(hintEl, LINE2, 32, ()=>{ hintEl.appendChild(cur); });
+        }, 280);
+      });
+    }, 150);
+  });
+}
+
+/* ══════════════════════════════════════════════════
+   6. KONAMI CODE EASTER EGG
+   ↑↑↓↓←→←→BA — re-launches the rocket!
+══════════════════════════════════════════════════ */
+const konami = [38,38,40,40,37,39,37,39,66,65];
+let kIdx = 0;
+document.addEventListener('keydown', e => {
+  if (e.keyCode === konami[kIdx]) {
+    kIdx++;
+    if (kIdx === konami.length) {
+      kIdx = 0;
+      for (let i = 0; i < 30; i++) {
+        spawnExhaust(W/2, H/2, Math.random() * Math.PI * 2);
+      }
+      if (!rm) startRocketFlight();
+    }
+  } else { kIdx = 0; }
+});
+</script>
+</body>
+</html>

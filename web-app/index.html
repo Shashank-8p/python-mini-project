@@ -1,200 +1,731 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🎮 Python Mini Projects - Interactive Web Edition</title>
-    <link rel="stylesheet" href="css/styles.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="Play 18+ beginner-friendly Python mini projects in your browser—games, math tools, and utilities with a modern dark/light UI." name="description"/>
+<meta content="dark light" name="color-scheme"/>
+<meta content="#0c0f1a" id="themeColorMeta" name="theme-color"/>
+<meta content="Python Mini Projects — Web Edition" property="og:title"/>
+<meta content="Interactive games, math visualizations, and utilities—no install required." property="og:description"/>
+<meta content="website" property="og:type"/>
+<meta content="https://github.com/steam-bell-92/python-mini-project" property="og:url"/>
+<meta content="summary" name="twitter:card"/>
+<meta content="Python Mini Projects — Web Edition" name="twitter:title"/>
+<meta content="Interactive games, math visualizations, and utilities in the browser." name="twitter:description"/>
+<title>Python Mini Projects — Interactive Web Edition</title>
+<link href="assets/favicon.svg" rel="icon" type="image/svg+xml"/>
+<link href="css/styles.css" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
 </head>
 <body>
-    <!-- Navigation -->
-    <nav class="navbar">
-        <div class="container">
-            <div class="logo">
-                <h1>🎮 Python Mini Projects</h1>
-            </div>
-            <button class="theme-toggle" id="themeToggle">
-                <i class="fas fa-moon"></i>
-            </button>
+
+<!-- Scroll Progress Bar -->
+<div id="scrollProgressContainer" aria-label="Page scroll progress">
+  <div id="scrollProgressBar"></div>
+</div>
+
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
+<!-- Cursor Glow -->
+<div aria-hidden="true" class="cursor-glow" id="cursorGlow"></div>
+
+<!-- Mobile Sidebar Toggle -->
+<button type="button" class="mobile-sidebar-toggle" id="mobileSidebarToggle" aria-label="Toggle sidebar menu" aria-expanded="false">
+  <i class="fas fa-bars"></i>
+</button>
+
+<!-- ── PRIMARY SIDEBAR DOCK ──────────────────────────────────── -->
+<aside class="sidebar-dock" id="mainSidebar" aria-label="Primary Navigation">
+  <div class="sidebar-brand">
+    <a class="logo-wrap" href="index.html">
+      <div class="logo-top-row">
+        <div class="logo-text">
+          <span class="logo-py">py</span>
+          <span class="logo-mini">.mini</span>
+          <span class="logo-parens">()</span>
         </div>
+      </div>
+      <span class="logo-tagline">games, math &amp; terminal toys</span>
+    </a>
+  </div>
+
+  <div class="sidebar-search">
+    <div class="search-box" style="position:relative">
+      <i class="fas fa-search"></i>
+      <input aria-label="Search projects" id="searchInput" placeholder="Search projects or tags..." type="text"/>
+      <div class="search-dropdown" id="searchDropdown">
+        <div class="dropdown-content" id="searchDropdownContent">
+          <div class="search-loader" id="searchLoader" style="display:none"><div class="spinner"></div></div>
+          <div class="recent-searches-section" id="recentSearchesSection">
+            <div class="dropdown-section-title">Recent</div>
+            <div class="dropdown-list" id="recentSearchesList"></div>
+          </div>
+          <div class="results-section" id="resultsSection" style="display:none">
+            <div class="dropdown-section-title">Projects</div>
+            <div class="dropdown-list" id="resultsList"></div>
+          </div>
+          <div class="tips-section" id="tipsSection">
+            <p><strong>Search tips</strong></p>
+            <ul>
+              <li>Type a project name — <code>snake</code>, <code>quiz</code></li>
+              <li>Filter by tag — <code>game</code>, <code>math</code>, <code>utility</code></li>
+              <!-- <li>Press <code>Ctrl+K</code> to focus search</li> -->
+            </ul>
+          </div>
+          <div class="no-results-message" id="noResultsMessage" style="display:none">No projects found. Try a different keyword.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  
+
+    
+<template id="projectsTemplate">
+    <div class="container">
+        <div class="projects-grid" id="projectsGrid">
+                    <div class="project-card" data-category="games" data-project="2048-game" data-tags="game,puzzle,2048,logic,tiles">
+                        <img class="card-banner" src="assets/banners/2048-game.jpg" alt="2048 Game" loading="lazy">
+                        <div class="card-actions"><button class="btn-play">Try It</button></div>
+                        <h3>2048 Game</h3>
+                        <p>Combine tiles and reach 2048!</p>
+                    </div>
+                    <div class="project-card" data-category="math" data-project="progression-recognizer" data-tags="math,sequence,progression,arithmetic,geometric">
+                        <img class="card-banner" src="assets/banners/progression-recognizer.jpg" alt="AP/GP/AGP/HP Recognizer" loading="lazy">
+                        <div class="card-actions"><button class="btn-play">Try It</button></div>
+                        <h3>AP/GP/AGP/HP Recognizer</h3>
+                        <p>Identify progression types from any sequence.</p>
+                    </div>
+                    <div class="project-card" data-category="math" data-project="armstrong" data-tags="math,number,digits,power">
+                        <img class="card-banner" src="assets/banners/armstrong.jpg" alt="Armstrong Numbers" loading="lazy">
+                        <div class="card-actions"><button class="btn-play">Try It</button></div>
+                        <h3>Armstrong Numbers</h3>
+                        <p>Check special number properties!</p>
+                    </div>
+                    <div class="project-card" data-category="utilities" data-project="binary-search" data-tags="search,algorithm,binary,sorted,visualizer">
+                        <img class="card-banner" src="assets/banners/binary-search.jpg" alt="Binary Search" loading="lazy">
+                        <div class="card-actions"><button class="btn-play">Try It</button></div>
+                        <h3>Binary Search</h3>
+                        <p>Visualize binary search step by step!</p>
+                    </div>
+                    <div class="project-card" data-category="utilities" data-project="bubble-sort" data-tags="sort,algorithm,bubble,visualizer,array">
+                        <img class="card-banner" src="assets/banners/bubble-sort.jpg" alt="Bubble Sort" loading="lazy">
+                        <div class="card-actions"><button class="btn-play">Try It</button></div>
+                        <h3>Bubble Sort</h3>
+                        <p>Watch bubble sort in real-time!</p>
+                    </div>
+                    <div class="project-card" data-category="games" data-project="blackjack(21)" data-tags="game,casino,card,random">
+                        <img class="card-banner" src="assets/banners/blackjack21.jpg" alt="BlackJack21" loading="lazy">
+                        <div class="card-actions"><button class="btn-play">Play Now</button></div>
+                        <h3>BlackJack21</h3>
+                        <p>Beat the dealer!</p>
+                    </div>
+                    <div class="project-card" data-category="math" data-project="calculator" data-tags="math,calculator,arithmetic,operations">
+                        <img class="card-banner" src="assets/banners/calculator.jpg" alt="Calculator" loading="lazy">
+                        <div class="card-actions"><button class="btn-play">Try It</button></div>
+                        <h3>Calculator</h3>
+                        <p>Your mathematical companion!</p>
+                    </div>
+                    <div class="project-card" data-category="utilities" data-project="caesar-cipher" data-tags="utility,caesar,cipher,encryption,decryption">
+                        <img class="card-banner" src="assets/banners/caesar-cipher.jpg" alt="Caesar Cipher" loading="lazy">
+                        <div class="card-actions"><button class="btn-play">Try It</button></div>
+                        <h3>Caesar Cipher</h3>
+                        <p>Encrypt &amp; decrypt with a shift!</p>
+                    </div>
+                    <div class="project-card" data-category="games" data-project="coin-flip" data-tags="game,random,animation,probability,heads,tails">
+                        <img class="card-banner" src="assets/banners/coin-flip.jpg" alt="Coin Flip" loading="lazy">
+                        <div class="card-actions"><button class="btn-play">Try It</button></div>
+                        <h3>Coin Flip</h3>
+                        <p>Heads or tails with spinning animation!</p>
+                    </div>
+                    <div class="project-card" data-category="math" data-project="collatz" data-tags="math,conjecture,algorithm,sequence">
+                        <img class="card-banner" src="assets/banners/collatz.jpg" alt="Collatz Conjecture" loading="lazy">
+                        <div class="card-actions"><button class="btn-play">Try It</button></div>
+                        <h3>Collatz Conjecture</h3>
+                        <p>Explore the 3n+1 problem!</p>
+                    </div>
+                    <div class="project-card" data-category="utilities" data-project="color-palette" data-tags="utility,color,palette,css,design,theme,website">
+                        <img class="card-banner" src="assets/banners/color-palette.jpg" alt="Color Palette Suggestor" loading="lazy">
+                        <div class="card-actions"><button class="btn-play">Try It</button></div>
+                        <h3>Color Palette Suggestor</h3>
+                        <p>Generate palettes + CSS snippets for any website type and mood!</p>
+                    </div>
+                    <div class="project-card" data-category="utilities" data-project="resume-analyzer" data-tags="utility,resume,ats,career,analysis,keywords">
+                      <img class="card-banner" src="assets/banners/resume-analyzer.jpg" alt="AI Resume Analyzer" loading="lazy">
+                      <div class="card-actions"><button class="btn-play">Try It</button></div>
+                      <h3>AI Resume Analyzer</h3>
+                      <p>Score resumes with ATS-style keyword and formatting insights!</p>
+                    </div>
+                    <div class="project-card" data-category="math" data-project="coordinate-polar-transform" data-tags="math,coordinate,transformation,geometry">
+                        <img class="card-banner" src="assets/banners/coordinate-polar-transform.jpg" alt="Coordinate to Polar" loading="lazy">
+                        <div class="card-actions"><button class="btn-play">Try It</button></div>
+                        <h3>Coordinate to Polar</h3>
+                        <p>Transform Cartesian (x, y) into polar (r, theta).</p>
+                    </div>
+                    <div class="project-card" data-category="math" data-project="derivative-calculator" data-tags="math,calculus,derivative,polynomial">
+                        <img class="card-banner" src="assets/banners/derivative-calculator.jpg" alt="Derivative Calculator" loading="lazy">
+                        <div class="card-actions"><button class="btn-play">Try It</button></div>
+                        <h3>Derivative Calculator</h3>
+                        <p>Compute 1st/nth polynomial derivatives and evaluate them.</p>
+                    </div>
+                    <div class="project-card" data-category="games" data-project="dice-rolling" data-tags="game,random,animation,probability">
+                        <img class="card-banner" src="assets/banners/dice-rolling.jpg" alt="Dice Rolling" loading="lazy">
+                        <div class="card-actions"><button class="btn-play">Try It</button></div>
+                        <h3>Dice Rolling</h3>
+                        <p>Roll the dice with 3D animation!</p>
+                    </div>
+                    <div class="project-card" data-category="games" data-project="dots-boxes">
+                        <img class="card-banner" src="assets/banners/dots-boxes.jpg" alt="Dots &amp; Boxes AI" loading="lazy">
+                        <div class="card-actions"><button class="btn-play">Try It</button></div>
+                        <h3>Dots &amp; Boxes AI</h3>
+                        <p>Challenge friends or AI in this strategy game!</p>
+                    </div>
+                    <div class="project-card" data-category="games" data-project="emoji-memory">
+                        <img class="card-banner" src="assets/banners/emoji-memory.jpg" alt="Emoji Memory Game" loading="lazy">
+                        <div class="card-actions"><button class="btn-play">Try It</button></div>
+                        <h3>Emoji Memory Game</h3>
+                        <p>Test your memory with matching emojis!</p>
+                    </div>
+                    <div class="project-card" data-category="math" data-project="fibonacci" data-tags="math,sequence,series,loops,recursion">
+                        <img class="card-banner" src="assets/banners/fibonacci.jpg" alt="Fibonacci Series" loading="lazy">
+                        <div class="card-actions"><button class="btn-play">Try It</button></div>
+                        <h3>Fibonacci Series</h3>
+                        <p>Generate Fibonacci sequences!</p>
+                    </div>
+                    <div class="project-card" data-category="games" data-project="flames">
+                        <img class="card-banner" src="assets/banners/flames.jpg" alt="FLAMES Game" loading="lazy">
+                        <div class="card-actions"><button class="btn-play">Try It</button></div>
+                        <h3>FLAMES Game</h3>
+                        <p>Discover your relationship status!</p>
+                    </div>
+                    <div class="project-card" data-category="games" data-project="flappy-game">
+                        <img class="card-banner" src="assets/banners/flappy-game.jpg" alt="Flappy Game" loading="lazy">
+                        <div class="card-actions"><button class="btn-play">Try It</button></div>
+                        <h3>Flappy Game</h3>
+                        <p>Dodge the incoming balls and survive!</p>
+                    </div>
+                    <div class="project-card" data-category="games" data-project="hangman" data-tags="game,word,letters,logic,string">
+                        <img class="card-banner" src="assets/banners/hangman.jpg" alt="Hangman" loading="lazy">
+                        <div class="card-actions"><button class="btn-play">Try It</button></div>
+                        <h3>Hangman</h3>
+                        <p>Classic word-guessing game!</p>
+                    </div>
+                    <div class="project-card" data-category="games" data-project="math-quiz" data-tags="game,math,quiz,mcq,lives,difficulty">
+                        <img class="card-banner" src="assets/banners/math-quiz.jpg" alt="Math Quiz" loading="lazy">
+                        <div class="card-actions"><button class="btn-play">Try It</button></div>
+                        <h3>Math Quiz</h3>
+                        <p>MCQ quiz with lives and difficulty levels!</p>
+                    </div>
+                    <div class="project-card" data-category="utilities" data-project="morse-code" data-tags="utility,morse,translation,communication">
+                        <img class="card-banner" src="assets/banners/morse-code.jpg" alt="Morse Code" loading="lazy">
+                        <div class="card-actions"><button class="btn-play">Try It</button></div>
+                        <h3>Morse Code</h3>
+                        <p>Translate with lights &amp; sound!</p>
+                    </div>
+                    <div class="project-card" data-category="utilities" data-project="number-converter">
+                        <img class="card-banner" src="assets/banners/number-converter.jpg" alt="Number Converter" loading="lazy">
+                        <div class="card-actions"><button class="btn-play">Try It</button></div>
+                        <h3>Number Converter</h3>
+                        <p>Convert Dec, Bin, Oct, and Hex!</p>
+                    </div>
+                    <div class="project-card" data-category="games" data-project="number-guessing" data-tags="game,logic,loops,conditional">
+                        <img class="card-banner" src="assets/banners/number-guessing.jpg" alt="Number Guessing" loading="lazy">
+                        <div class="card-actions"><button class="btn-play">Try It</button></div>
+                        <h3>Number Guessing</h3>
+                        <p>Guess the secret number!</p>
+                    </div>
+                    <div class="project-card" data-category="math" data-project="pascal-triangle" data-tags="math,triangle,visualization,recursion">
+                        <img class="card-banner" src="assets/banners/pascal-triangle.jpg" alt="Pascal's Triangle" loading="lazy">
+                        <div class="card-actions"><button class="btn-play">Try It</button></div>
+                        <h3>Pascal's Triangle</h3>
+                        <p>Beautiful hexagon visualization!</p>
+                    </div>
+                    <div class="project-card" data-category="games" data-project="password-forge">
+                        <img class="card-banner" src="assets/banners/password-forge.jpg" alt="Password Forge" loading="lazy">
+                        <div class="card-actions"><button class="btn-play">Try It</button></div>
+                        <h3>Password Forge</h3>
+                        <p>Survive evolving firewall password rules!</p>
+                    </div>
+                    <div class="project-card" data-category="math" data-project="prime-analyzer" data-tags="math,prime,factors,algorithm">
+                        <img class="card-banner" src="assets/banners/prime-analyzer.jpg" alt="Prime Analyzer" loading="lazy">
+                        <div class="card-actions"><button class="btn-play">Try It</button></div>
+                        <h3>Prime Analyzer</h3>
+                        <p>All-in-one prime number toolkit!</p>
+                    </div>
+                    <div class="project-card" data-category="math" data-project="projectile-motion" data-tags="math,physics,motion,calculation">
+                        <img class="card-banner" src="assets/banners/projectile-motion.jpg" alt="Projectile Motion" loading="lazy">
+                        <div class="card-actions"><button class="btn-play">Try It</button></div>
+                        <h3>Projectile Motion</h3>
+                        <p>Calculate TOF, Hmax, and Range with physics!</p>
+                    </div>
+                    <div class="project-card" data-category="games" data-project="rock-paper-scissor" data-tags="game,random,choice,strategy,decision">
+                        <img class="card-banner" src="assets/banners/rock-paper-scissor.jpg" alt="Rock Paper Scissors" loading="lazy">
+                        <div class="card-actions"><button class="btn-play">Try It</button></div>
+                        <h3>Rock Paper Scissors</h3>
+                        <p>Battle against the computer!</p>
+                    </div>
+                    <div class="project-card" data-category="games" data-project="simon-says" data-tags="game,memory,reflex,pattern,sequence">
+                      <img class="card-banner" src="assets/banners/simon-says.jpg" alt="Simon Says" loading="lazy">
+                        <div class="card-actions"><button class="btn-play">Try It</button></div>
+                        <h3>Simon Says</h3>
+                        <p>Repeat the pattern and test your memory skills!</p>
+                    </div>
+                    <div class="project-card" data-category="games" data-project="snake-game">
+                        <img class="card-banner" src="assets/banners/snake-game.jpg" alt="Snake Game" loading="lazy">
+                        <div class="card-actions"><button class="btn-play">Try It</button></div>
+                        <h3>Snake Game</h3>
+                        <p>Classic snake game!</p>
+                    </div>
+                    <div class="project-card" data-category="utilities" data-project="tower-of-hanoi" data-tags="utility,puzzle,recursion,algorithm">
+                        <img class="card-banner" src="assets/banners/tower-of-hanoi.jpg" alt="Tower of Hanoi" loading="lazy">
+                        <div class="card-actions"><button class="btn-play">Try It</button></div>
+                        <h3>Tower of Hanoi</h3>
+                        <p>Solve the classic puzzle!</p>
+                    </div>
+                    <div class="project-card" data-category="utilities" data-project="typing-speed-tester" data-tags="utility,typing,speed,tester">
+                        <img class="card-banner" src="assets/banners/typing-speed-tester.jpg" alt="Typing Speed Tester" loading="lazy">
+                        <div class="card-actions"><button class="btn-play">Try It</button></div>
+                        <h3>Typing Speed Tester</h3>
+                        <p>Test your typing skills!</p>
+                    </div>
+                    <div class="project-card" data-category="games" data-project="whack-a-mole">
+                        <img class="card-banner" src="assets/banners/whack-a-mole.jpg" alt="Whack-a-Mole" loading="lazy">
+                        <div class="card-actions"><button class="btn-play">Try It</button></div>
+                        <h3>Whack-a-Mole</h3>
+                        <p>Hit the moles before they disappear!</p>
+                    </div>
+                    <div class="project-card" data-category="games" data-project="word-scramble" data-tags="game,word,scramble,letters">
+                        <img class="card-banner" src="assets/banners/word-scramble.jpg" alt="Word Scramble" loading="lazy">
+                        <div class="card-actions"><button class="btn-play">Try It</button></div>
+                        <h3>Word Scramble</h3>
+                        <p>Unscramble words before attempts run out!</p>
+                    </div>
+                </div>
+
+                <div id="emptyState" class="empty-state" style="display: none;">
+                    <p>No Projects right now :)</p>
+                    <p class="empty-state-hint">Try adjusting your search or category filter.</p>
+                </div>
+            </div>
+        </template>
+  </div>
+
+  <div class="sidebar-menu-wrapper">
+    <div class="sidebar-menu-title">Categories</div>
+    <nav class="sidebar-menu" role="tablist" aria-label="Filter by category">
+      <button aria-selected="true" class="sidebar-tab active" data-category="all" role="tab" tabindex="0">
+        <span class="sidebar-icon"><svg data-lucide="layers"></svg></span>
+        <span class="sidebar-label">All Projects</span>
+      </button>
+      <button aria-selected="false" class="sidebar-tab" data-category="games" role="tab" tabindex="-1">
+        <span class="sidebar-icon"><svg data-lucide="gamepad-2"></svg></span>
+        <span class="sidebar-label">Games Arcade</span>
+      </button>
+      <button aria-selected="false" class="sidebar-tab" data-category="math" role="tab" tabindex="-1">
+        <span class="sidebar-icon"><svg data-lucide="sigma"></svg></span>
+        <span class="sidebar-label">Math Visuals</span>
+      </button>
+      <button aria-selected="false" class="sidebar-tab" data-category="utilities" role="tab" tabindex="-1">
+        <span class="sidebar-icon"><svg data-lucide="wrench"></svg></span>
+        <span class="sidebar-label">Utilities Lab</span>
+      </button>
+      <button aria-selected="false" class="sidebar-tab" data-category="favorites" role="tab" tabindex="-1">
+        <span class="sidebar-icon"><svg data-lucide="star"></svg></span>
+        <span class="sidebar-label">My Favorites</span>
+      </button>
+      <button aria-selected="false" class="sidebar-tab" data-category="playground" role="tab" tabindex="-1">
+        <span class="sidebar-icon"><svg data-lucide="terminal"></svg></span>
+        <span class="sidebar-label">Playground</span>
+      </button>
     </nav>
+  </div>
 
-    <!-- Category Tabs -->
-    <section class="tabs-section">
-        <div class="container">
-            <div class="tabs-wrapper">
-                <div class="tabs">
-                    <button class="tab active" data-category="all">🌟 All Projects</button>
-                    <button class="tab" data-category="games">🎮 Games</button>
-                    <button class="tab" data-category="math">🔢 Math</button>
-                    <button class="tab" data-category="utilities">🔐 Utilities</button>
-                </div>
-                <button class="btn-random-project" id="randomProjectBtn" title="Discover a random project!">
-                    <i class="fas fa-dice"></i> Random Project 🎲
-                </button>
-            </div>
-        </div>
-    </section>
+  <div class="sidebar-footer">
+    <div class="sidebar-controls">
+      <button aria-label="Mute sounds" class="sound-toggle" id="soundToggle" type="button">
+        <i class="fas fa-volume-up"></i>
+      </button>
+      <button aria-label="Switch theme" class="theme-toggle" id="themeToggle" type="button">
+        <i class="fas fa-sun"></i>
+      </button>
+    </div>
+  </div>
+</aside>
 
-    <!-- Projects Grid -->
-    <section class="projects-section">
-        <div class="container">
-            <div class="projects-grid" id="projectsGrid">
-                
-                <!-- Games -->
-                <div class="project-card" data-category="games" data-project="rock-paper-scissor">
-                    <div class="card-icon">🪨</div>
-                    <h3>Rock Paper Scissors</h3>
-                    <p>Battle against the computer!</p>
-                    <button class="btn-play">Play Now</button>
-                </div>
 
-                <div class="project-card" data-category="games" data-project="dice-rolling">
-                    <div class="card-icon">🎲</div>
-                    <h3>Dice Rolling</h3>
-                    <p>Roll the dice with 3D animation!</p>
-                    <button class="btn-play">Play Now</button>
-                </div>
+<div class="hero-controls">
+  <button aria-label="Mute sounds" class="hero-control-btn sound-toggle" id="heroSoundToggle" type="button">
+    <i class="fas fa-volume-up"></i>
+  </button>
+  <button aria-label="Switch theme" class="hero-control-btn theme-toggle" id="heroThemeToggle" type="button">
+    <i class="fas fa-sun"></i>
+  </button>
+</div>
 
-                <div class="project-card" data-category="games" data-project="coin-flip">
-                    <div class="card-icon">🪙</div>
-                    <h3>Coin Flip</h3>
-                    <p>Heads or tails with spinning animation!</p>
-                    <button class="btn-play">Play Now</button>
-                </div>
+<!-- ═══════════════════════════════════════════════════════════════
+     MAIN CONTENT
+     ═══════════════════════════════════════════════════════════════ -->
+<main id="main-content" tabindex="-1">
 
-                <div class="project-card" data-category="games" data-project="number-guessing">
-                    <div class="card-icon">🎯</div>
-                    <h3>Number Guessing</h3>
-                    <p>Guess the secret number!</p>
-                    <button class="btn-play">Play Now</button>
-                </div>
+<!-- ── Hero Section ─────────────────────────────────────────── -->
+<section class="hero-section" aria-label="Welcome">
+  <canvas aria-hidden="true" id="boardCanvas"></canvas>
+  <div class="hero-background" aria-hidden="true"></div>
+  <div aria-hidden="true" class="hero-orb hero-orb-one"></div>
+  <div aria-hidden="true" class="hero-orb hero-orb-two"></div>
+  <div aria-hidden="true" class="hero-orb hero-orb-three"></div>
 
-                <div class="project-card" data-category="games" data-project="hangman">
-                    <div class="card-icon">🎮</div>
-                    <h3>Hangman</h3>
-                    <p>Classic word-guessing game!</p>
-                    <button class="btn-play">Play Now</button>
-                </div>
-
-                <div class="project-card" data-category="games" data-project="flames">
-                    <div class="card-icon">💖</div>
-                    <h3>FLAMES Game</h3>
-                    <p>Discover your relationship status!</p>
-                    <button class="btn-play">Play Now</button>
-                </div>
-
-                <!-- Math Tools -->
-                <div class="project-card" data-category="math" data-project="fibonacci">
-                    <div class="card-icon">✨</div>
-                    <h3>Fibonacci Series</h3>
-                    <p>Generate Fibonacci sequences!</p>
-                    <button class="btn-play">Try It</button>
-                </div>
-
-                <div class="project-card" data-category="math" data-project="progression-recognizer">
-                    <div class="card-icon">📐</div>
-                    <h3>AP/GP/AGP/HP Recognizer</h3>
-                    <p>Identify progression types from any sequence.</p>
-                    <button class="btn-play">Try It</button>
-                </div>
-
-                <div class="project-card" data-category="math" data-project="pascal-triangle">
-                    <div class="card-icon">🔺</div>
-                    <h3>Pascal's Triangle</h3>
-                    <p>Beautiful hexagon visualization!</p>
-                    <button class="btn-play">Try It</button>
-                </div>
-
-                <div class="project-card" data-category="math" data-project="armstrong">
-                    <div class="card-icon">💎</div>
-                    <h3>Armstrong Numbers</h3>
-                    <p>Check special number properties!</p>
-                    <button class="btn-play">Try It</button>
-                </div>
-
-                <div class="project-card" data-category="math" data-project="calculator">
-                    <div class="card-icon">🧮</div>
-                    <h3>Calculator</h3>
-                    <p>Your mathematical companion!</p>
-                    <button class="btn-play">Try It</button>
-                </div>
-
-                <div class="project-card" data-category="math" data-project="collatz">
-                    <div class="card-icon">🔢</div>
-                    <h3>Collatz Conjecture</h3>
-                    <p>Explore the 3n+1 problem!</p>
-                    <button class="btn-play">Try It</button>
-                </div>
-
-                <div class="project-card" data-category="math" data-project="prime-analyzer">
-                    <div class="card-icon">🔱</div>
-                    <h3>Prime Analyzer</h3>
-                    <p>All-in-one prime number toolkit!</p>
-                    <button class="btn-play">Try It</button>
-                </div>
-
-                <div class="project-card" data-category="math" data-project="projectile-motion">
-                    <div class="card-icon">🚀</div>
-                    <h3>Projectile Motion</h3>
-                    <p>Calculate TOF, Hmax, and Range with physics!</p>
-                    <button class="btn-play">Try It</button>
-                </div>
-
-                <div class="project-card" data-category="math" data-project="coordinate-polar-transform">
-                    <div class="card-icon">🧭</div>
-                    <h3>Coordinate to Polar</h3>
-                    <p>Transform Cartesian (x, y) into polar (r, theta).</p>
-                    <button class="btn-play">Try It</button>
-                </div>
-
-                <div class="project-card" data-category="math" data-project="derivative-calculator">
-                    <div class="card-icon">∂</div>
-                    <h3>Derivative Calculator</h3>
-                    <p>Compute 1st/nth polynomial derivatives and evaluate them.</p>
-                    <button class="btn-play">Try It</button>
-                </div>
-
-                <!-- Utilities -->
-                <div class="project-card" data-category="utilities" data-project="morse-code">
-                    <div class="card-icon">📻</div>
-                    <h3>Morse Code</h3>
-                    <p>Translate with lights & sound!</p>
-                    <button class="btn-play">Try It</button>
-                </div>
-
-                <div class="project-card" data-category="utilities" data-project="tower-of-hanoi">
-                    <div class="card-icon">🗼</div>
-                    <h3>Tower of Hanoi</h3>
-                    <p>Solve the classic puzzle!</p>
-                    <button class="btn-play">Try It</button>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Project Modal -->
-    <div class="modal" id="projectModal">
-        <div class="modal-content">
-            <button class="modal-close" id="modalClose">&times;</button>
-            <div id="modalBody"></div>
-        </div>
+  <div class="hero-shell">
+    <!-- ── Big Brand Header (Logo & Futuristic Title) ────────────────── -->
+    <div class="hero-logo-header">
+      <div class="hero-logo-text">
+        <span class="hero-logo-py">py</span><span class="hero-logo-mini">.mini</span><span class="hero-logo-parens">()</span>
+      </div>
     </div>
 
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="container">
-            <p>Made with ❤️ for Python learners everywhere</p>
-            <p>
-                <a href="https://github.com/yourusername/python-mini-project" target="_blank">
-                    <i class="fab fa-github"></i> View on GitHub
-                </a>
-            </p>
-        </div>
-    </footer>
+    <!-- ── Welcome Badges (Glassified with Hover Glints) ──────────────── -->
+    <div class="hero-badge-row">
+      <span class="hero-kicker">
+        <span class="hero-kicker-dot"></span>
+        Python Arcade
+      </span>
+      <span class="hero-status">
+        <span class="hero-status-dot"></span>
+        System Status: Nominal
+      </span>
+    </div>
 
-    <script src="js/main.js"></script>
-    <script src="js/projects.js"></script>
+    <div class="hero-title-wrapper">
+      <h1 class="hero-title">
+        <span class="hero-title-line">Build tiny Python</span>
+        <span class="hero-title-line hero-title-accent">projects &amp; play</span>
+      </h1>
+    </div>
+
+    <p class="hero-subtitle">Jump into browser-ready games, math experiments, and utility labs — each one ready in your browser, no install required.</p>
+
+    <!-- ── Hero CTA Action Row ──────────────────────────────────────── -->
+    <div class="hero-cta-row">
+      <button class="btn-primary-hero" id="exploreBtn">
+        <i class="fas fa-rocket"></i>
+        Explore Projects
+      </button>
+      <button class="btn-secondary-hero" id="randomProjectBtn">
+        <i class="fas fa-shuffle"></i>
+        Surprise Me
+      </button>
+      <a class="btn-contribution-hero" id="contributionBtn" href="https://github.com/steam-bell-92/python-mini-project/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener noreferrer">
+        <i class="fas fa-code-branch"></i>
+        Open Contribution
+      </a>
+    </div>
+
+    <div class="hero-meta">
+      <span><strong id="heroProjectCount">0</strong> total projects</span>
+      <span><strong id="heroGameCount">0</strong> games</span>
+      <span><strong id="heroMathCount">0</strong> maths</span>
+      <span><strong id="heroUtilityCount">0</strong> utilities</span>
+    </div>
+  </div>
+</section>
+
+<!-- ── Timeline Section ─────────────────────────────────────── -->
+<section class="hero-timeline-section" id="timelineSection">
+  <canvas aria-hidden="true" id="timelineCanvas"></canvas>
+  <div class="timeline-background" aria-hidden="true"></div>
+  <div aria-hidden="true" class="timeline-orb timeline-orb-one"></div>
+  <div aria-hidden="true" class="timeline-orb timeline-orb-two"></div>
+  <div class="timeline-container">
+    <div class="timeline-route-badge">TRACK-ROUTE</div>
+    <div class="timeline-grid">
+      <div class="timeline-item" data-reveal>
+        <div class="timeline-content">
+          <span class="timeline-icon" data-lucide="house"></span>
+          <div class="timeline-text">
+            <span class="timeline-step">01</span>
+            <h3 class="timeline-title">Welcome</h3>
+            <p class="timeline-desc">Jump into a tiny Python arcade built for curious beginners</p>
+          </div>
+        </div>
+        <div class="timeline-node"><div class="timeline-dot"></div></div>
+        <div></div>
+      </div>
+      <div class="timeline-item" data-reveal>
+        <div></div>
+        <div class="timeline-node"><div class="timeline-dot"></div></div>
+        <div class="timeline-content">
+          <span class="timeline-icon" data-lucide="compass"></span>
+          <div class="timeline-text">
+            <span class="timeline-step">02</span>
+            <h3 class="timeline-title">Explore</h3>
+            <p class="timeline-desc">Browse games, math puzzles &amp; utilities — each one ready in your browser</p>
+          </div>
+        </div>
+      </div>
+      <div class="timeline-item" data-reveal>
+        <div class="timeline-content">
+          <span class="timeline-icon" data-lucide="play"></span>
+          <div class="timeline-text">
+            <span class="timeline-step">03</span>
+            <h3 class="timeline-title">Play</h3>
+            <p class="timeline-desc">Launch any project instantly, experiment with code, and share your wins</p>
+          </div>
+        </div>
+        <div class="timeline-node"><div class="timeline-dot"></div></div>
+        <div></div>
+      </div>
+      <div class="timeline-item" data-reveal>
+        <div></div>
+        <div class="timeline-node"><div class="timeline-dot"></div></div>
+        <div class="timeline-content">
+          <span class="timeline-icon" data-lucide="book-open"></span>
+          <div class="timeline-text">
+            <span class="timeline-step">04</span>
+            <h3 class="timeline-title">Learn</h3>
+            <p class="timeline-desc">Pick up Python concepts as you play — loops, logic, data &amp; more</p>
+          </div>
+        </div>
+      </div>
+      <div class="timeline-item" data-reveal>
+        <div class="timeline-content">
+          <span class="timeline-icon" data-lucide="hammer"></span>
+          <div class="timeline-text">
+            <span class="timeline-step">05</span>
+            <h3 class="timeline-title">Build</h3>
+            <p class="timeline-desc">Create your own mini projects and share them with the community</p>
+          </div>
+        </div>
+        <div class="timeline-node"><div class="timeline-dot"></div></div>
+        <div></div>
+      </div>
+      <div class="timeline-item" data-reveal>
+        <div></div>
+        <div class="timeline-node"><div class="timeline-dot"></div></div>
+        <div class="timeline-content">
+          <span class="timeline-icon" data-lucide="share-2"></span>
+          <div class="timeline-text">
+            <span class="timeline-step">06</span>
+            <h3 class="timeline-title">Share</h3>
+            <p class="timeline-desc">Show off your work, get feedback, and keep growing as a dev</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+
+<!-- ── Projects Section (Bento Grid) ────────────────────────── -->
+<section class="projects-section" id="projectsSection">
+  <div class="container">
+    <div class="section-header">
+      <h2 class="section-heading">Projects <span id="projectCountBadge"></span></h2>
+      <button class="btn-random-project" id="randomProjectBtnSidebar" type="button">
+        <i class="fas fa-shuffle"></i>
+        Surprise Me
+      </button>
+    </div>
+    <div class="projects-grid" id="projectsGrid"></div>
+
+    <div id="emptyState" class="empty-state" style="display: none;">
+      <p>No Projects right now :)</p>
+      <p class="empty-state-hint">Try adjusting your search or category filter.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ── Python Playground Section ────────────────────────────── -->
+<section aria-label="Python Playground" class="playground-section" id="playgroundSection" style="display:none">
+  <div class="container">
+    <div class="playground-header">
+      <div class="playground-title-row">
+        <h2 class="playground-title">🐍 Python Playground</h2>
+        <div aria-label="Pyodide status" aria-live="polite" class="playground-status" id="playgroundStatus">
+          <span class="status-dot" id="statusDot"></span>
+          <span id="statusText">Open tab to load Python</span>
+        </div>
+      </div>
+      <p class="playground-subtitle">
+        Write and run real Python code in your browser — powered by
+        <a href="https://pyodide.org" rel="noopener noreferrer" target="_blank">Pyodide</a>.
+        No install, no backend.
+      </p>
+      <p class="playground-hint">
+        <kbd>Ctrl</kbd>+<kbd>Enter</kbd> runs code &nbsp;·&nbsp;
+        <kbd>Tab</kbd> inserts 4 spaces
+      </p>
+    </div>
+
+    <div class="playground-body">
+      <div class="editor-panel">
+        <div class="panel-header">
+          <span><i aria-hidden="true" class="fas fa-code"></i> Code Editor</span>
+          <div class="editor-actions">
+            <button class="btn-panel-action" id="loadExample" title="Load a sample snippet" type="button">
+              <i aria-hidden="true" class="fas fa-lightbulb"></i> Example
+            </button>
+            <button class="btn-panel-action" id="clearEditor" title="Clear the editor" type="button">
+              <i aria-hidden="true" class="fas fa-trash-alt"></i> Clear
+            </button>
+          </div>
+        </div>
+        <!-- CodeMirror 6 will mount here -->
+        <div id="pythonEditor" aria-label="Python code editor" role="textbox" aria-multiline="true"></div>
+      </div>
+
+      <div class="console-panel">
+        <div class="panel-header">
+          <span><i aria-hidden="true" class="fas fa-terminal"></i> Output Console</span>
+          <button class="btn-panel-action" id="clearConsole" title="Clear the console" type="button">
+            <i aria-hidden="true" class="fas fa-times-circle"></i> Clear
+          </button>
+        </div>
+        <pre aria-label="Console output" aria-live="polite" class="console-output" id="consoleOutput"></pre>
+      </div>
+    </div>
+
+    <div class="playground-controls">
+      <button aria-label="Run Python code" class="btn-run" disabled id="runCode" type="button">
+        <i aria-hidden="true" class="fas fa-play"></i> Run Code
+      </button>
+      <button aria-label="Stop execution" class="btn-stop" disabled id="stopCode" type="button">
+        <i aria-hidden="true" class="fas fa-stop"></i> Stop
+      </button>
+    </div>
+  </div>
+</section>
+
+</main>
+
+
+
+<!-- ── Project Modal ─────────────────────────────────────────── -->
+<div aria-hidden="true" aria-labelledby="modalDialogTitle" aria-modal="true" class="modal" id="projectModal" role="dialog">
+  <div class="modal-content">
+    <div class="modal-header">
+      <button aria-label="Close project dialog" class="modal-close" id="modalClose" type="button">&times;</button>
+    </div>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<!-- ── Back to Top ───────────────────────────────────────────── -->
+<button aria-label="Back to top" class="back-to-top" id="backToTop" title="Back to top" type="button">
+  <i class="fas fa-arrow-up"></i>
+</button>
+
+<!-- ── Footer ────────────────────────────────────────────────── -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-content">
+      <div class="footer-brand">
+        <h2>Python Mini Projects</h2>
+        <p>Learn Python the Fun Way! Interactive games, math visualizations, and utilities built directly in your browser.</p>
+        <div class="footer-social-icons">
+          <a aria-label="GitHub" href="https://github.com/steam-bell-92/python-mini-project" rel="noopener noreferrer" target="_blank"><i class="fab fa-github"></i></a>
+          <a aria-label="Twitter" href="https://x.com/AnujKulkarni040"><i class="fab fa-twitter"></i></a>
+          <a aria-label="LinkedIn" href="https://www.linkedin.com/in/anuj-chandrakant-kulkarni"><i class="fab fa-linkedin"></i></a>
+          <a aria-label="YouTube" href="https://www.instagram.com/obscura.nuj"><i class="fab fa-instagram"></i></a>
+        </div>
+      </div>
+      <div class="footer-links">
+        <h3>Projects</h3>
+        <ul>
+          <li><a href="#" class="footer-cat-link" data-cat="games">Games</a></li>
+          <li><a href="#" class="footer-cat-link" data-cat="math">Math</a></li>
+          <li><a href="#" class="footer-cat-link" data-cat="utilities">Utilities</a></li>
+          <li><a href="#" class="footer-cat-link" data-cat="favorites">Favorites</a></li>
+          <li><a href="#" class="footer-cat-link" data-cat="playground">Playground</a></li>
+        </ul>
+      </div>
+      <div class="footer-links">
+        <h3>Resources</h3>
+        <ul>
+          <li><a href="https://github.com/steam-bell-92/python-mini-project/blob/main/README.md"><i class="fas fa-book"></i> Documentation</a></li>
+          <li><a href="https://github.com/steam-bell-92/python-mini-project/blob/main/CONTRIBUTING.md"><i class="fas fa-code-branch"></i> Contribute</a></li>
+          <li><a href="https://github.com/steam-bell-92/python-mini-project/issues/new"><i class="fas fa-bug"></i> Report a Bug</a></li>
+        </ul>
+      </div>
+      <div class="footer-links">
+        <h3>Legal</h3>
+        <ul>
+          <li><a href="./privacy-policy.html">Privacy Policy</a></li>
+          <li><a href="./terms-condition.html">Terms of Service</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>Made with &hearts; for Python learners everywhere &copy; 2026</p>
+    </div>
+  </div>
+</footer>
+
+<!-- ── SCRIPTS ──────────────────────────────────────────────── -->
+<script src="https://unpkg.com/lucide@latest"></script>
+<script src="js/audio.js"></script>
+<script src="js/audioManager.js"></script>
+<script src="js/projects/rock-paper-scissor.js"></script>
+<script src="js/projects/dice-rolling.js"></script>
+<script src="js/projects/coin-flip.js"></script>
+<script src="js/projects/number-guessing.js"></script>
+<script src="js/projects/binary-search.js"></script>
+<script src="js/projects/bubble-sort.js"></script>
+<script src="js/projects/hangman.js"></script>
+<script src="js/projects/flames.js"></script>
+<script src="js/projects/fibonacci.js"></script>
+<script src="js/projects/pascal-triangle.js"></script>
+<script src="js/projects/calculator.js"></script>
+<script src="js/projects/collatz.js"></script>
+<script src="js/projects/armstrong.js"></script>
+<script src="js/projects/prime-analyzer.js"></script>
+<script src="js/projects/projectile-motion.js"></script>
+<script src="js/projects/progression-recognizer.js"></script>
+<script src="js/projects/coordinate-polar-transform.js"></script>
+<script src="js/projects/derivative-calculator.js"></script>
+<script src="js/projects/morse-code.js"></script>
+<script src="js/projects/tower-of-hanoi.js"></script>
+<script src="js/projects/math-quiz.js"></script>
+<script src="js/projects/simon-says.js"></script>
+<script src="js/projects/flappy-game.js"></script>
+<script src="js/projects/tic-tac-toe.js"></script>
+<script src="js/projects/2048-game.js"></script>
+<script src="js/projects/dots-boxes.js"></script>
+<script src="js/projects/emoji-memory-game.js"></script>
+<script src="js/projects/number-converter.js"></script>
+<script src="js/projects/password-forge.js"></script>
+<script src="js/projects/typing-speed-tester.js"></script>
+<script src="js/projects/productive-pet.js"></script>
+<script src="js/projects/whack-a-mole.js"></script>
+<script src="js/projects/word-scramble.js"></script>
+<script src="js/projects/snake.js"></script>
+<script src="js/projects/spot-the-difference.js"></script>
+<script src="js/projects/color-palette.js"></script>
+<script src="js/projects/ceasar-cipher.js"></script>
+<script src="js/projects/resume-analyzer.js"></script>
+<!-- Registry: maps project names to their module functions -->
+<script src="js/projects.js"></script>
+<!-- CodeMirror 6 – syntax-highlighted Python editor (local bundle) -->
+<script src="js/cm-editor.js"></script>
+<script src="js/playground.js"></script>
+<script src="js/main.js"></script>
+<script src="js/hero-canvas.js"></script>
+<script>lucide.createIcons();</script>
+
+    <div class="search-kbd-hint" id="searchKbdHint" aria-hidden="true">
+      Press <kbd>Ctrl</kbd><span>+</span><kbd>K</kbd> to focus search
+    </div>      
+
+<!-- Info Modal Popup -->
+<div id="infoModalOverlay" class="info-modal-overlay">
+  <div class="info-modal-content">
+    <button class="info-modal-close" id="infoModalClose">&times;</button>
+    <h3 id="infoModalTitle">How to Play</h3>
+    <ul id="infoModalList"></ul>
+    <button class="info-modal-btn" id="infoModalGotIt">Got it</button>
+  </div>
+</div>
+
 </body>
 </html>

@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Frequently Asked Questions about Python Mini Projects — contributions, requirements, GSSoC participation, and running projects locally.">
+    <meta name="color-scheme" content="dark light">
+    <meta id="themeColorMeta" name="theme-color" content="#0f172a">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://steam-bell-92.github.io/python-mini-project/faq.html">
+    <meta property="og:title" content="FAQ - Python Mini Projects">
+    <meta property="og:description" content="Frequently Asked Questions about Python Mini Projects — contributions, requirements, GSSoC participation, and running projects locally.">
+    <meta property="og:site_name" content="py.mini() lab">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://steam-bell-92.github.io/python-mini-project/faq.html">
+    <meta name="twitter:title" content="FAQ - Python Mini Projects">
+    <meta name="twitter:description" content="Frequently Asked Questions about Python Mini Projects — contributions, requirements, GSSoC participation, and running projects locally.">
+    <link rel="canonical" href="https://steam-bell-92.github.io/python-mini-project/faq.html">
+    <title>FAQ - Python Mini Projects</title>
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+    <script type="application/ld+json">
+    {"@context":"https://schema.org","@type":"FAQPage","name":"FAQ - py.mini() Lab","url":"https://steam-bell-92.github.io/python-mini-project/faq.html","publisher":{"@type":"Organization","name":"py.mini() lab"}}
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-main:#060b13; --bg-card:#0a1322; --bg-header:#071227;
+            --text-primary:#ffffff; --text-muted:#8fa0b7;
+            --accent:#22c55e; --accent-dim:rgba(34,197,94,.12);
+            --border:rgba(255,255,255,.06); --code-bg:#0d1b2a;
+        }
+        html[data-theme="light"] {
+            --bg-main:#f8fafc; --bg-card:#ffffff; --bg-header:#ffffff;
+            --text-primary:#0f172a; --text-muted:#475569;
+            --accent:#16a34a; --accent-dim:rgba(22,163,74,.1);
+            --border:#e2e8f0; --code-bg:#f1f5f9;
+        }
+        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+        body{background:var(--bg-main);color:var(--text-primary);font-family:'Segoe UI',Roboto,sans-serif;line-height:1.7;transition:background .3s,color .3s}
+
+        /* Header */
+        .faq-header{background:var(--bg-header);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:1000;transition:background .3s,border-color .3s}
+        .header-inner{max-width:1200px;margin:0 auto;padding:0 2rem;height:80px;display:flex;justify-content:space-between;align-items:center;gap:1rem}
+        .logo-wrap{display:flex;align-items:center;gap:4px;text-decoration:none;font-family:'Space Grotesk',sans-serif;font-size:1.6rem;font-weight:700}
+        .logo-py{color:var(--text-muted)} .logo-mini{color:var(--text-primary)} .logo-parens{color:var(--accent)}
+        .header-controls{display:flex;align-items:center;gap:10px}
+        .btn-back,.btn-theme{height:42px;display:inline-flex;align-items:center;justify-content:center;border-radius:50px;cursor:pointer;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:.9rem;transition:all .2s ease;text-decoration:none;border:1px solid var(--border)}
+        .btn-back{padding:0 1.1rem;background:transparent;color:var(--text-muted);gap:.45rem}
+        .btn-back:hover{color:var(--accent);border-color:var(--accent);transform:translateY(-1px)}
+        .btn-theme{width:42px;background:var(--accent);color:#fff;border-color:transparent;font-size:1rem}
+        .btn-theme:hover{transform:translateY(-2px) scale(1.07)}
+
+        /* Hero */
+        .faq-hero{text-align:center;padding:4rem 1rem 2.5rem;position:relative}
+        .faq-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 60% at 50% 0%,rgba(34,197,94,.08) 0%,transparent 70%);pointer-events:none}
+        .hero-kicker{font-family:'IBM Plex Mono',monospace;font-size:.82rem;color:var(--accent);letter-spacing:.12em;text-transform:uppercase;margin-bottom:.75rem}
+        .hero-title{font-family:'Space Grotesk',sans-serif;font-size:clamp(2rem,5vw,3rem);font-weight:700;letter-spacing:-.5px;margin-bottom:.75rem}
+        .hero-sub{color:var(--text-muted);font-size:1.05rem;max-width:540px;margin:0 auto}
+
+        /* Main */
+        .faq-main{max-width:860px;margin:0 auto;padding:1rem 1.25rem 5rem}
+        .faq-grid{display:grid;gap:1rem}
+
+        /* Cards */
+        .faq-card{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;overflow:hidden;transition:border-color .2s,box-shadow .2s}
+        .faq-card:hover{border-color:rgba(34,197,94,.3);box-shadow:0 4px 20px rgba(34,197,94,.07)}
+        .faq-card.open{border-color:var(--accent)}
+        .faq-trigger{width:100%;display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:1.1rem 1.4rem;background:transparent;border:none;cursor:pointer;text-align:left;color:var(--text-primary);font-size:1rem;font-weight:600;font-family:inherit;transition:background .2s}
+        .faq-trigger:hover{background:var(--accent-dim)}
+        .faq-card.open .faq-trigger{background:var(--accent-dim)}
+        .faq-label{display:flex;align-items:center;gap:.65rem}
+        .faq-label i{color:var(--accent);font-size:.95rem;flex-shrink:0}
+        .faq-icon i{color:var(--text-muted);transition:transform .3s ease;font-size:.85rem;flex-shrink:0}
+        .faq-card.open .faq-icon i{transform:rotate(180deg);color:var(--accent)}
+        .faq-panel{max-height:0;overflow:hidden;transition:max-height .35s ease,padding .25s ease;padding:0 1.4rem}
+        .faq-card.open .faq-panel{max-height:600px;padding:0 1.4rem 1.2rem}
+        .faq-panel p{color:var(--text-muted);font-size:.97rem;margin-bottom:.75rem}
+        .faq-panel p:last-child{margin-bottom:0}
+        .faq-panel ul{color:var(--text-muted);font-size:.97rem;padding-left:1.4rem;margin-bottom:.75rem}
+        .faq-panel li{margin-bottom:.35rem}
+        .faq-panel pre{background:var(--code-bg);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:8px;padding:.75rem 1rem;margin:.6rem 0;overflow-x:auto}
+        .faq-panel code{font-family:'IBM Plex Mono',monospace;font-size:.85rem;color:var(--accent)}
+
+        /* Footer */
+        .faq-footer{background:var(--bg-header);border-top:1px solid var(--border);text-align:center;padding:1.75rem 1rem;font-size:.875rem;color:var(--text-muted);transition:background .3s,border-color .3s}
+        .faq-footer a{color:var(--accent);text-decoration:none;transition:opacity .2s}
+        .faq-footer a:hover{opacity:.75}
+
+        @media(max-width:600px){
+            .header-inner{padding:0 1rem;height:68px}
+            .logo-wrap{font-size:1.3rem}
+            .btn-back span{display:none}
+        }
+    </style>
+</head>
+<body>
+
+    <header class="faq-header">
+        <div class="header-inner">
+            <a href="index.html" class="logo-wrap">
+                <span class="logo-py">py</span>
+                <span class="logo-mini">.mini</span>
+                <span class="logo-parens">()</span>
+            </a>
+            <div class="header-controls">
+                <a href="index.html" class="btn-back">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Home</span>
+                </a>
+                <button type="button" class="btn-theme" id="themeToggle" aria-label="Toggle theme">
+                    <i class="fas fa-sun" id="themeIcon"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="faq-hero">
+        <p class="hero-kicker">Need a hand?</p>
+        <h1 class="hero-title">Frequently Asked Questions</h1>
+        <p class="hero-sub">Common questions about the lab, project launch flow, contributions, and running things locally.</p>
+    </div>
+
+    <main class="faq-main">
+        <div class="faq-grid">
+
+            <article class="faq-card">
+                <button class="faq-trigger" aria-expanded="false" aria-controls="faq-panel-1" id="faq-button-1">
+                    <span class="faq-label"><i class="fas fa-book-open" aria-hidden="true"></i> What is Python Mini Projects?</span>
+                    <span class="faq-icon"><i class="fas fa-chevron-down" aria-hidden="true"></i></span>
+                </button>
+                <div id="faq-panel-1" class="faq-panel" role="region" aria-labelledby="faq-button-1">
+                    <p>Python Mini Projects is a GSSoC-approved open-source project designed to make learning Python fun, practical, and beginner-friendly through interactive mini projects.</p>
+                    <p>Perfect for students, beginners, and anyone who wants to build fun projects while learning Python.</p>
+                </div>
+            </article>
+
+            <article class="faq-card">
+                <button class="faq-trigger" aria-expanded="false" aria-controls="faq-panel-2" id="faq-button-2">
+                    <span class="faq-label"><i class="fas fa-hands-helping" aria-hidden="true"></i> Who can contribute to this project?</span>
+                    <span class="faq-icon"><i class="fas fa-chevron-down" aria-hidden="true"></i></span>
+                </button>
+                <div id="faq-panel-2" class="faq-panel" role="region" aria-labelledby="faq-button-2">
+                    <p>Currently, contributions are open only to officially approved GSSoC participants.</p>
+                </div>
+            </article>
+
+            <article class="faq-card">
+                <button class="faq-trigger" aria-expanded="false" aria-controls="faq-panel-3" id="faq-button-3">
+                    <span class="faq-label"><i class="fas fa-code-branch" aria-hidden="true"></i> How can I contribute?</span>
+                    <span class="faq-icon"><i class="fas fa-chevron-down" aria-hidden="true"></i></span>
+                </button>
+                <div id="faq-panel-3" class="faq-panel" role="region" aria-labelledby="faq-button-3">
+                    <p>You can:</p>
+                    <ul>
+                        <li>work on existing issues</li>
+                        <li>create a new issue (after checking for duplicates)</li>
+                        <li>comment under the issue to get assigned</li>
+                    </ul>
+                    <p>A project admin will review and assign the issue.</p>
+                </div>
+            </article>
+
+            <article class="faq-card">
+                <button class="faq-trigger" aria-expanded="false" aria-controls="faq-panel-4" id="faq-button-4">
+                    <span class="faq-label"><i class="fas fa-list-check" aria-hidden="true"></i> What are the project requirements?</span>
+                    <span class="faq-icon"><i class="fas fa-chevron-down" aria-hidden="true"></i></span>
+                </button>
+                <div id="faq-panel-4" class="faq-panel" role="region" aria-labelledby="faq-button-4">
+                    <ul>
+                        <li>Python 3.10+</li>
+                        <li>Standard library only (no external dependencies)</li>
+                        <li>Zero setup required</li>
+                        <li>Cross-platform support (Windows, macOS, Linux)</li>
+                    </ul>
+                </div>
+            </article>
+
+            <article class="faq-card">
+                <button class="faq-trigger" aria-expanded="false" aria-controls="faq-panel-5" id="faq-button-5">
+                    <span class="faq-label"><i class="fas fa-user-graduate" aria-hidden="true"></i> Can I contribute without prior open-source experience?</span>
+                    <span class="faq-icon"><i class="fas fa-chevron-down" aria-hidden="true"></i></span>
+                </button>
+                <div id="faq-panel-5" class="faq-panel" role="region" aria-labelledby="faq-button-5">
+                    <p>Yes. This project is beginner-friendly and a great place to start contributing to open source.</p>
+                </div>
+            </article>
+
+            <article class="faq-card">
+                <button class="faq-trigger" aria-expanded="false" aria-controls="faq-panel-6" id="faq-button-6">
+                    <span class="faq-label"><i class="fas fa-ban" aria-hidden="true"></i> Are external Python libraries allowed?</span>
+                    <span class="faq-icon"><i class="fas fa-chevron-down" aria-hidden="true"></i></span>
+                </button>
+                <div id="faq-panel-6" class="faq-panel" role="region" aria-labelledby="faq-button-6">
+                    <p>No. Only Python standard libraries are allowed in this project.</p>
+                </div>
+            </article>
+
+            <article class="faq-card">
+                <button class="faq-trigger" aria-expanded="false" aria-controls="faq-panel-7" id="faq-button-7">
+                    <span class="faq-label"><i class="fas fa-check-circle" aria-hidden="true"></i> What happens after my PR is submitted?</span>
+                    <span class="faq-icon"><i class="fas fa-chevron-down" aria-hidden="true"></i></span>
+                </button>
+                <div id="faq-panel-7" class="faq-panel" role="region" aria-labelledby="faq-button-7">
+                    <p>After your PR is reviewed and merged, your contribution points will be updated on your GSSoC profile within approximately 20–24 hours.</p>
+                </div>
+            </article>
+
+            <article class="faq-card">
+                <button class="faq-trigger" aria-expanded="false" aria-controls="faq-panel-8" id="faq-button-8">
+                    <span class="faq-label"><i class="fas fa-terminal" aria-hidden="true"></i> How do I run a project locally?</span>
+                    <span class="faq-icon"><i class="fas fa-chevron-down" aria-hidden="true"></i></span>
+                </button>
+                <div id="faq-panel-8" class="faq-panel" role="region" aria-labelledby="faq-button-8">
+                    <p>Clone the repository:</p>
+                    <pre><code>git clone https://github.com/YOUR_USERNAME/python-mini-project.git</code></pre>
+                    <p>Then serve it:</p>
+                    <pre><code>cd web-app
+python -m http.server 5500</code></pre>
+                    <p>Or with Node.js live-server:</p>
+                    <pre><code>npm install -g live-server
+cd web-app
+live-server</code></pre>
+                </div>
+            </article>
+
+        </div>
+    </main>
+
+    <footer class="faq-footer">
+        <p>Made with ❤️ for Python learners everywhere &nbsp;|&nbsp;
+            <a href="https://github.com/steam-bell-92/python-mini-project" target="_blank" rel="noopener noreferrer">
+                <i class="fab fa-github"></i> View on GitHub
+            </a>
+        </p>
+    </footer>
+
+    <script>
+        const html      = document.documentElement;
+        const themeBtn  = document.getElementById('themeToggle');
+        const themeIcon = document.getElementById('themeIcon');
+
+        function applyTheme(t) {
+            if (t === 'light') {
+                html.setAttribute('data-theme', 'light');
+                themeIcon.className = 'fas fa-moon';
+                themeBtn.setAttribute('aria-label', 'Switch to dark mode');
+            } else {
+                html.removeAttribute('data-theme');
+                themeIcon.className = 'fas fa-sun';
+                themeBtn.setAttribute('aria-label', 'Switch to light mode');
+            }
+            localStorage.setItem('theme', t);
+        }
+
+        applyTheme(localStorage.getItem('theme') || 'dark');
+        themeBtn.addEventListener('click', () => {
+            applyTheme(html.getAttribute('data-theme') === 'light' ? 'dark' : 'light');
+        });
+
+        function closeAll() {
+            document.querySelectorAll('.faq-card.open').forEach(card => {
+                card.classList.remove('open');
+                card.querySelector('.faq-trigger').setAttribute('aria-expanded', 'false');
+            });
+        }
+
+        document.querySelectorAll('.faq-trigger').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const card   = btn.closest('.faq-card');
+                const isOpen = card.classList.contains('open');
+                closeAll();
+                if (!isOpen) {
+                    card.classList.add('open');
+                    btn.setAttribute('aria-expanded', 'true');
+                }
+            });
+            btn.addEventListener('keydown', e => {
+                if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); btn.click(); }
+            });
+        });
+    </script>
+
+</body>
+</html>
