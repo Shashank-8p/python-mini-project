@@ -19,6 +19,12 @@
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
 </head>
 <body>
+
+<!-- Scroll Progress Bar -->
+<div id="scrollProgressContainer" aria-label="Page scroll progress">
+  <div id="scrollProgressBar"></div>
+</div>
+
 <a class="skip-link" href="#main-content">Skip to main content</a>
 
 <!-- Cursor Glow -->
@@ -565,8 +571,8 @@
             </button>
           </div>
         </div>
-        <textarea aria-label="Python code editor" autocapitalize="off" autocorrect="off" id="pythonEditor" placeholder="# Write your Python code here…
-print('Hello, World!')" spellcheck="false"></textarea>
+        <!-- CodeMirror 6 will mount here -->
+        <div id="pythonEditor" aria-label="Python code editor" role="textbox" aria-multiline="true"></div>
       </div>
 
       <div class="console-panel">
@@ -700,6 +706,8 @@ print('Hello, World!')" spellcheck="false"></textarea>
 <script src="js/projects/resume-analyzer.js"></script>
 <!-- Registry: maps project names to their module functions -->
 <script src="js/projects.js"></script>
+<!-- CodeMirror 6 – syntax-highlighted Python editor (local bundle) -->
+<script src="js/cm-editor.js"></script>
 <script src="js/playground.js"></script>
 <script src="js/main.js"></script>
 <script src="js/hero-canvas.js"></script>

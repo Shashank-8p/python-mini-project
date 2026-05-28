@@ -1,29 +1,356 @@
+/*
+  main.js - lightweight app wiring
+  - safe: guards around missing functions/elements
+  - ensures Try It / Play buttons open modal even if project rendering fails
+*/
+
+function prefersReducedMotion() {
+    return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
+function syncThemeColor(theme) {
+    if (!themeColorMeta) return;
+    themeColorMeta.setAttribute('content', theme === 'light' ? '#f8fafc' : '#0f172a');
+}
+
+function updateThemeToggleAria(isLightTheme) {
+    themeToggle.setAttribute(
+        'aria-label',
+        isLightTheme ? 'Switch to dark mode' : 'Switch to light mode'
+    );
+}
+
+themeToggle.addEventListener('click', () => {
+    const currentTheme = html.getAttribute('data-theme');
+    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+
+    html.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+    syncThemeColor(newTheme);
+
+    themeToggle.innerHTML =
+        newTheme === 'light'
+            ? '<i class="fas fa-sun" aria-hidden="true"></i>'
+            : '<i class="fas fa-moon" aria-hidden="true"></i>';
+    updateThemeToggleAria(newTheme === 'light');
+});
+
+const savedTheme = localStorage.getItem('theme') || 'dark';
+html.setAttribute('data-theme', savedTheme);
+syncThemeColor(savedTheme);
+themeToggle.innerHTML =
+    savedTheme === 'light'
+        ? '<i class="fas fa-sun" aria-hidden="true"></i>'
+        : '<i class="fas fa-moon" aria-hidden="true"></i>';
+updateThemeToggleAria(savedTheme === 'light');
+
+
+// Back to Top Button
+const backToTopButton = document.getElementById('backToTop');
+
+const toggleBackToTopButton = () => {
+    backToTopButton.classList.toggle('visible', window.scrollY > 300);
+};
+
+window.addEventListener('scroll', toggleBackToTopButton, { passive: true });
+toggleBackToTopButton();
+
+backToTopButton.addEventListener('click', () => {
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    window.scrollTo({ top: 0, behavior: prefersReducedMotion ? 'auto' : 'smooth' });
+});
+
+// Category Filtering
+const tabs = document.querySelectorAll('.tab');
+const projectCards = document.querySelectorAll('.project-card');
+
+let recentSearches = JSON.parse(localStorage.getItem('recentSearches') || '[]');
+// Restore persisted filter state so it survives modal open/close (fix: issue #601)
+let currentSearchQuery = sessionStorage.getItem('filterSearchQuery') || '';
+let selectedSuggestionIndex = -1;
+let currentCategory = sessionStorage.getItem('filterCategory') || 'all';
+
+// Category Filtering (tabs)
+const searchInput = document.getElementById('projectSearch');
+const searchClear = document.getElementById('searchClear');
+const searchDropdown = document.getElementById('searchDropdown');
+const searchShortcut = document.getElementById('searchShortcut');
+const searchLoader = document.getElementById('searchLoader');
+const emptyState = document.getElementById('emptyState');
+const resultsList = document.getElementById('resultsList');
+const resultsSection = document.getElementById('resultsSection');
+const recentSearchesList = document.getElementById('recentSearchesList');
+const recentSearchesSection = document.getElementById('recentSearchesSection');
+const tipsSection = document.getElementById('tipsSection');
+
+// Debounce function for smooth search performance
+function debounce(func, delay) {
+    let timeoutId;
+    return function (...args) {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => func(...args), delay);
+    };
+}
+
+// Get all matching projects for search query
+function getMatchingProjects(query) {
+    if (!query) return [];
+    
+    const matches = [];
+    projectCards.forEach(card => {
+        const category = card.getAttribute('data-category');
+        const title = card.querySelector('h3').textContent.toLowerCase();
+        const description = card.querySelector('p').textContent.toLowerCase();
+        const tags = (card.getAttribute('data-tags') || '').toLowerCase();
+        
+        const categoryMatch = currentCategory === 'all' || category === currentCategory;
+        const searchMatch = title.includes(query) || 
+                           description.includes(query) || 
+                           tags.includes(query);
+        
+        if (categoryMatch && searchMatch) {
+            const project = {
+                card: card,
+                title: card.querySelector('h3').textContent,
+                tags: card.getAttribute('data-tags') || '',
+                category: category
+            };
+            matches.push(project);
+        }
+    });
+    
+    return matches;
+}
+
+// Render autocomplete suggestions
+function renderSuggestions(query) {
+    if (!query) {
+        renderRecentSearches();
+        return;
+    }
+    
+    const matches = getMatchingProjects(query);
+    
+    if (matches.length === 0) {
+        resultsSection.style.display = 'none';
+        recentSearchesSection.style.display = 'none';
+        tipsSection.style.display = 'block';
+        return;
+    }
+    
+    resultsList.innerHTML = '';
+    matches.slice(0, 8).forEach((project, index) => {
+        const item = document.createElement('div');
+        item.className = 'dropdown-item' + (index === selectedSuggestionIndex ? ' selected' : '');
+        item.innerHTML = `
+            <div class="dropdown-item-icon">
+                ${project.card.querySelector('.card-icon').textContent}
+            </div>
+            <div class="dropdown-item-text">${highlightMatch(project.title, query)}</div>
+            <span class="dropdown-item-tag">${project.category}</span>
+        `;
+        item.addEventListener('click', () => selectSuggestion(project.title));
+        item.addEventListener('mouseenter', () => {
+            selectedSuggestionIndex = index;
+            updateSuggestionHighlight();
+        });
+        resultsList.appendChild(item);
+    });
+    
+    resultsSection.style.display = 'block';
+    recentSearchesSection.style.display = 'none';
+    tipsSection.style.display = 'none';
+    selectedSuggestionIndex = -1;
+}
+
+// Highlight matching text in suggestions
+function highlightMatch(text, query) {
+    const parts = text.split(new RegExp(`(${query})`, 'gi'));
+    return parts.map(part => 
+        part.toLowerCase() === query.toLowerCase() 
+            ? `<mark style="background: rgba(99, 102, 241, 0.3); color: var(--primary-color); font-weight: 600;">${part}</mark>`
+            : part
+    ).join('');
+}
+
+// Render recent searches
+function renderRecentSearches() {
+    if (!recentSearchesSection) return;
+    
+    if (recentSearches.length === 0) {
+        recentSearchesSection.style.display = 'none';
+        if (tipsSection) tipsSection.style.display = 'block';
+        if (resultsSection) resultsSection.style.display = 'none';
+        return;
+    }
+    
+    recentSearchesList.innerHTML = '';
+    recentSearches.slice(0, 5).forEach((search) => {
+        const item = document.createElement('div');
+        item.className = 'dropdown-recent-item';
+        item.innerHTML = `
+            <div class="dropdown-recent-text">
+                <i class="fas fa-history" style="opacity: 0.5; font-size: 0.9rem;"></i>
+                <span style="flex: 1; cursor: pointer; color: var(--text-secondary);">${search}</span>
+            </div>
+            <button class="dropdown-recent-remove" aria-label="Remove search">
+                <i class="fas fa-x"></i>
+            </button>
+        `;
+        
+        const textElement = item.querySelector('span');
+        const removeBtn = item.querySelector('.dropdown-recent-remove');
+        
+        textElement.addEventListener('click', () => {
+            searchInput.value = search;
+            currentSearchQuery = search;
+            performSearch();
+            closeDropdown();
+        });
+        
+        removeBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            recentSearches = recentSearches.filter(s => s !== search);
+            localStorage.setItem('recentSearches', JSON.stringify(recentSearches));
+            renderRecentSearches();
+        });
+        
+        recentSearchesList.appendChild(item);
+    });
+    
+    recentSearchesSection.style.display = 'block';
+    resultsSection.style.display = 'none';
+    tipsSection.style.display = 'block';
+}
+
+function applyCategoryFilter(category) {
+    projectCards.forEach((card) => {
+        if (category === 'all' || card.getAttribute('data-category') === category) {
+            card.style.display = 'block';
+            if (!prefersReducedMotion()) {
+                card.style.animation = 'fadeIn 0.6s ease';
+            } else {
+                card.style.animation = 'none';
+            }
+        } else {
+            card.style.display = 'none';
+        }
+    });
+}
+
+// Fix #601: performSearch filters cards by currentSearchQuery within the active category
+function performSearch() {
+    const query = currentSearchQuery.toLowerCase().trim();
+    projectCards.forEach((card) => {
+        const category = card.getAttribute('data-category');
+        const categoryMatch = currentCategory === 'all' || category === currentCategory;
+
+        if (!query) {
+            // No query — show/hide by category only
+            card.style.display = categoryMatch ? 'block' : 'none';
+            return;
+        }
+
+        const title = (card.querySelector('h3')?.textContent || '').toLowerCase();
+        const desc  = (card.querySelector('p')?.textContent  || '').toLowerCase();
+        const tags  = (card.getAttribute('data-tags')        || '').toLowerCase();
+        const searchMatch = title.includes(query) || desc.includes(query) || tags.includes(query);
+
+        card.style.display = (categoryMatch && searchMatch) ? 'block' : 'none';
+    });
+
+    // Show/hide empty state
+    const anyVisible = Array.from(projectCards).some(c => c.style.display !== 'none');
+    if (emptyState) emptyState.style.display = anyVisible ? 'none' : 'block';
+}
+
+function moveTabFocus(fromIndex, delta) {
+    const len = tabs.length;
+    const next = (fromIndex + delta + len) % len;
+    tabs.forEach((t, i) => {
+        const selected = i === next;
+        t.classList.toggle('active', selected);
+        t.setAttribute('aria-selected', selected ? 'true' : 'false');
+        t.setAttribute('tabindex', selected ? '0' : '-1');
+    });
+    tabs[next].focus();
+    // Fix #601: persist category on keyboard navigation too
+    currentCategory = tabs[next].getAttribute('data-category');
+    sessionStorage.setItem('filterCategory', currentCategory);
+    applyCategoryFilter(currentCategory);
+    if (currentSearchQuery) performSearch();
+}
+
+tabs.forEach((tab, index) => {
+    tab.addEventListener('click', () => {
+        tabs.forEach((t, i) => {
+            const selected = t === tab;
+            t.classList.toggle('active', selected);
+            t.setAttribute('aria-selected', selected ? 'true' : 'false');
+            t.setAttribute('tabindex', selected ? '0' : '-1');
+        });
+        // Fix #601: persist selected category so it survives modal open/close
+        currentCategory = tab.getAttribute('data-category');
+        sessionStorage.setItem('filterCategory', currentCategory);
+        applyCategoryFilter(currentCategory);
+        // Re-apply search filter on top of the new category
+        if (currentSearchQuery) performSearch();
+    });
+
+    tab.addEventListener('keydown', (e) => {
+        let handled = false;
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+            moveTabFocus(index, 1);
+            handled = true;
+        } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+            moveTabFocus(index, -1);
+            handled = true;
+        } else if (e.key === 'Home') {
+            moveTabFocus(index, -index);
+            handled = true;
+        } else if (e.key === 'End') {
+            moveTabFocus(index, tabs.length - 1 - index);
+            handled = true;
+        }
+        if (handled) {
+            e.preventDefault();
+        }
 /* ═══════════════════════════════════════════════════════════════
    main.js — App wiring for Premium Python Projects Gallery
    ═══════════════════════════════════════════════════════════════ */
 
 function prefersReducedMotion() {
-  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
-function safeRun(fn) { try { fn(); } catch (e) { console.error(e); } }
+function safeRun(fn) {
+  try {
+    fn();
+  } catch (e) {
+    console.error(e);
+  }
+}
 
 function debounce(fn, ms) {
   var timer;
   return function () {
-    var args = arguments; var ctx = this;
+    var args = arguments;
+    var ctx = this;
     clearTimeout(timer);
-    timer = setTimeout(function () { fn.apply(ctx, args); }, ms);
+    timer = setTimeout(function () {
+      fn.apply(ctx, args);
+    }, ms);
   };
 }
 
 function syncThemeColor(theme) {
-  var meta = document.getElementById('themeColorMeta');
-  if (meta) meta.setAttribute('content', theme === 'light' ? '#f4f6f9' : '#0c0f1a');
+  var meta = document.getElementById("themeColorMeta");
+  if (meta)
+    meta.setAttribute("content", theme === "light" ? "#f4f6f9" : "#0c0f1a");
 }
 
 function escapeHtml(str) {
-  var d = document.createElement('div');
+  var d = document.createElement("div");
   d.textContent = str;
   return d.innerHTML;
 }
@@ -33,140 +360,152 @@ function escapeHtml(str) {
 // ============================================
 
 function showInfoModal(title, steps) {
-    var overlay = document.getElementById('infoModalOverlay');
-    var titleEl = document.getElementById('infoModalTitle');
-    var listEl = document.getElementById('infoModalList');
-    
-    if (!overlay || !titleEl || !listEl) return;
-    
-    titleEl.textContent = title;
-    listEl.innerHTML = steps.map(function(step) {
-        return '<li>' + step + '</li>';
-    }).join('');
-    
-    overlay.classList.add('active');
-    
-    function closeModal() {
-        overlay.classList.remove('active');
-        closeBtn.removeEventListener('click', closeModal);
-        gotItBtn.removeEventListener('click', closeModal);
-        overlay.removeEventListener('click', overlayClick);
-    }
-    
-    function overlayClick(e) {
-        if (e.target === overlay) closeModal();
-    }
-    
-    var closeBtn = document.getElementById('infoModalClose');
-    var gotItBtn = document.getElementById('infoModalGotIt');
-    
-    closeBtn.addEventListener('click', closeModal);
-    gotItBtn.addEventListener('click', closeModal);
-    overlay.addEventListener('click', overlayClick);
+  var overlay = document.getElementById("infoModalOverlay");
+  var titleEl = document.getElementById("infoModalTitle");
+  var listEl = document.getElementById("infoModalList");
+
+  if (!overlay || !titleEl || !listEl) return;
+
+  titleEl.textContent = title;
+  listEl.innerHTML = steps
+    .map(function (step) {
+      return "<li>" + step + "</li>";
+    })
+    .join("");
+
+  overlay.classList.add("active");
+
+  function closeModal() {
+    overlay.classList.remove("active");
+    closeBtn.removeEventListener("click", closeModal);
+    gotItBtn.removeEventListener("click", closeModal);
+    overlay.removeEventListener("click", overlayClick);
+  }
+
+  function overlayClick(e) {
+    if (e.target === overlay) closeModal();
+  }
+
+  var closeBtn = document.getElementById("infoModalClose");
+  var gotItBtn = document.getElementById("infoModalGotIt");
+
+  closeBtn.addEventListener("click", closeModal);
+  gotItBtn.addEventListener("click", closeModal);
+  overlay.addEventListener("click", overlayClick);
 }
 
-var currentProjectName = '';
+var currentProjectName = "";
 
 function setupModalInfoButton(projectName) {
-    currentProjectName = projectName;
-    var infoBtn = document.getElementById('modalInfoBtn');
-    if (!infoBtn) return;
-    
-    // Remove old listener by cloning
-    var newBtn = infoBtn.cloneNode(true);
-    infoBtn.parentNode.replaceChild(newBtn, infoBtn);
-    
-    newBtn.addEventListener('click', function() {
-        if (typeof getProjectInstructions === 'function') {
-            var info = getProjectInstructions(currentProjectName);
-            showInfoModal(info.title, info.steps);
-        }
-    });
+  currentProjectName = projectName;
+  var infoBtn = document.getElementById("modalInfoBtn");
+  if (!infoBtn) return;
+
+  // Remove old listener by cloning
+  var newBtn = infoBtn.cloneNode(true);
+  infoBtn.parentNode.replaceChild(newBtn, infoBtn);
+
+  newBtn.addEventListener("click", function () {
+    if (typeof getProjectInstructions === "function") {
+      var info = getProjectInstructions(currentProjectName);
+      showInfoModal(info.title, info.steps);
+    }
+  });
 }
 
 /* ── DOMContentLoaded ──────────────────────────────────────── */
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener("DOMContentLoaded", function () {
   var html = document.documentElement;
-  var themeToggle = document.getElementById('themeToggle');
-  var soundToggle = document.getElementById('soundToggle');
-  var backToTopButton = document.getElementById('backToTop');
-  var searchInput = document.getElementById('searchInput');
-  var searchDropdown = document.getElementById('searchDropdown');
-  var searchLoader = document.getElementById('searchLoader');
-  var recentSearchesList = document.getElementById('recentSearchesList');
-  var recentSearchesSection = document.getElementById('recentSearchesSection');
-  var resultsList = document.getElementById('resultsList');
-  var resultsSection = document.getElementById('resultsSection');
-  var tipsSection = document.getElementById('tipsSection');
-  var noResultsMessage = document.getElementById('noResultsMessage');
-  var projectsSection = document.getElementById('projectsSection');
-  var playgroundSection = document.getElementById('playgroundSection');
-  var stickyFilterBar = document.getElementById('stickyFilterBar');
-  var stickyTabs = document.querySelectorAll('.sticky-tab');
-  var heroSection = document.querySelector('.hero-section');
-  var cursorGlow = document.getElementById('cursorGlow');
-  var heroProjectCount = document.getElementById('heroProjectCount');
-  var heroGameCount = document.getElementById('heroGameCount');
-  var heroMathCount = document.getElementById('heroMathCount');
-  var heroUtilityCount = document.getElementById('heroUtilityCount');
-  var modal = document.getElementById('projectModal');
-  var modalBody = document.getElementById('modalBody');
-  var modalClose = document.getElementById('modalClose');
-  var modalTitle = document.getElementById('modalDialogTitle');
-  var exploreBtn = document.getElementById('exploreBtn');
-  var randomProjectBtn = document.getElementById('randomProjectBtn');
-  var randomProjectBtnSidebar = document.getElementById('randomProjectBtnSidebar');
-  var emptyState = document.getElementById('emptyState');
-  var emptyStateHint = document.getElementById('emptyStateHint');
-  var projectCountBadge = document.getElementById('projectCountBadge');
-  var mobileMenuToggle = document.getElementById('mobileMenuToggle');
-  var navControls = document.getElementById('navControls');
-  var navbar = document.getElementById('mainNavbar');
+  var themeToggle = document.getElementById("themeToggle");
+  var soundToggle = document.getElementById("soundToggle");
+  var backToTopButton = document.getElementById("backToTop");
+  var searchInput = document.getElementById("searchInput");
+  var searchDropdown = document.getElementById("searchDropdown");
+  var searchLoader = document.getElementById("searchLoader");
+  var recentSearchesList = document.getElementById("recentSearchesList");
+  var recentSearchesSection = document.getElementById("recentSearchesSection");
+  var resultsList = document.getElementById("resultsList");
+  var resultsSection = document.getElementById("resultsSection");
+  var tipsSection = document.getElementById("tipsSection");
+  var noResultsMessage = document.getElementById("noResultsMessage");
+  var projectsSection = document.getElementById("projectsSection");
+  var playgroundSection = document.getElementById("playgroundSection");
+  var stickyFilterBar = document.getElementById("stickyFilterBar");
+  var stickyTabs = document.querySelectorAll(".sticky-tab");
+  var heroSection = document.querySelector(".hero-section");
+  var cursorGlow = document.getElementById("cursorGlow");
+  var heroProjectCount = document.getElementById("heroProjectCount");
+  var heroGameCount = document.getElementById("heroGameCount");
+  var heroMathCount = document.getElementById("heroMathCount");
+  var heroUtilityCount = document.getElementById("heroUtilityCount");
+  var modal = document.getElementById("projectModal");
+  var modalBody = document.getElementById("modalBody");
+  var modalClose = document.getElementById("modalClose");
+  var modalTitle = document.getElementById("modalDialogTitle");
+  var exploreBtn = document.getElementById("exploreBtn");
+  var randomProjectBtn = document.getElementById("randomProjectBtn");
+  var randomProjectBtnSidebar = document.getElementById(
+    "randomProjectBtnSidebar"
+  );
+  var emptyState = document.getElementById("emptyState");
+  var emptyStateHint = document.getElementById("emptyStateHint");
+  var projectCountBadge = document.getElementById("projectCountBadge");
+  var mobileMenuToggle = document.getElementById("mobileMenuToggle");
+  var navControls = document.getElementById("navControls");
+  var navbar = document.getElementById("mainNavbar");
 
-  var currentCategory = 'all';
-  var currentSearchQuery = '';
+  var currentCategory = "all";
+  var currentSearchQuery = "";
   var playgroundActive = false;
   var selectedSuggestionIndex = -1;
   var removeTrap = null;
   var lastFocusedElement = null;
   var projectCards = [];
-  var recentSearches = JSON.parse(localStorage.getItem('recentSearches') || '[]');
+  var recentSearches = JSON.parse(
+    localStorage.getItem("recentSearches") || "[]"
+  );
 
   /* ── Helper: setMainInert ─────────────────────────────────── */
   function setMainInert(isInert) {
-    var main = document.getElementById('main-content');
+    var main = document.getElementById("main-content");
     if (!main) return;
-    if (isInert) main.setAttribute('inert', ''); else main.removeAttribute('inert');
+    if (isInert) main.setAttribute("inert", "");
+    else main.removeAttribute("inert");
   }
 
   /* ── Theme Toggle ─────────────────────────────────────────── */
   function updateThemeToggleAria(isLight) {
     if (!themeToggle) return;
-    themeToggle.setAttribute('aria-label', isLight ? 'Switch to dark mode' : 'Switch to light mode');
+    themeToggle.setAttribute(
+      "aria-label",
+      isLight ? "Switch to dark mode" : "Switch to light mode"
+    );
   }
 
   if (themeToggle) {
-    var savedTheme = localStorage.getItem('theme') || 'dark';
-    html.setAttribute('data-theme', savedTheme);
+    var savedTheme = localStorage.getItem("theme") || "dark";
+    html.setAttribute("data-theme", savedTheme);
     syncThemeColor(savedTheme);
     // Prefer showing a sun icon when the site is dark (site's main theme).
     // Show sun for dark theme, moon for light theme so reload displays sun by default.
-    themeToggle.innerHTML = savedTheme === 'dark'
-      ? '<i class="fas fa-sun"></i>'
-      : '<i class="fas fa-moon"></i>';
-    updateThemeToggleAria(savedTheme === 'light');
-
-    themeToggle.addEventListener('click', function () {
-      var current = html.getAttribute('data-theme');
-      var next = current === 'light' ? 'dark' : 'light';
-      html.setAttribute('data-theme', next);
-      localStorage.setItem('theme', next);
-      syncThemeColor(next);
-      // After toggling, show sun when the new theme is dark, moon when it's light.
-      themeToggle.innerHTML = next === 'dark'
+    themeToggle.innerHTML =
+      savedTheme === "dark"
         ? '<i class="fas fa-sun"></i>'
         : '<i class="fas fa-moon"></i>';
-      updateThemeToggleAria(next === 'light');
+    updateThemeToggleAria(savedTheme === "light");
+
+    themeToggle.addEventListener("click", function () {
+      var current = html.getAttribute("data-theme");
+      var next = current === "light" ? "dark" : "light";
+      html.setAttribute("data-theme", next);
+      localStorage.setItem("theme", next);
+      syncThemeColor(next);
+      // After toggling, show sun when the new theme is dark, moon when it's light.
+      themeToggle.innerHTML =
+        next === "dark"
+          ? '<i class="fas fa-sun"></i>'
+          : '<i class="fas fa-moon"></i>';
+      updateThemeToggleAria(next === "light");
     });
   }
 
@@ -178,37 +517,44 @@ document.addEventListener('DOMContentLoaded', function () {
         : '<i class="fas fa-volume-up"></i>';
     }
     updateSoundIcon();
-    soundToggle.addEventListener('click', function () {
-      if (typeof window.audioController.toggleMute === 'function') {
+    soundToggle.addEventListener("click", function () {
+      if (typeof window.audioController.toggleMute === "function") {
         window.audioController.toggleMute();
         updateSoundIcon();
-        if (!window.audioController.isMuted && typeof window.audioController.play === 'function') {
-          window.audioController.play('click');
+        if (
+          !window.audioController.isMuted &&
+          typeof window.audioController.play === "function"
+        ) {
+          window.audioController.play("click");
         }
       }
     });
   } else if (soundToggle) {
-    soundToggle.addEventListener('click', function () {
-      var icon = soundToggle.querySelector('i');
-      if (icon) icon.className = icon.className === 'fas fa-volume-up' ? 'fas fa-volume-mute' : 'fas fa-volume-up';
+    soundToggle.addEventListener("click", function () {
+      var icon = soundToggle.querySelector("i");
+      if (icon)
+        icon.className =
+          icon.className === "fas fa-volume-up"
+            ? "fas fa-volume-mute"
+            : "fas fa-volume-up";
     });
   }
 
   /* ── Hero Controls Mirror Toggles ─────────────────────────── */
-  var heroSoundToggle = document.getElementById('heroSoundToggle');
-  var heroThemeToggle = document.getElementById('heroThemeToggle');
+  var heroSoundToggle = document.getElementById("heroSoundToggle");
+  var heroThemeToggle = document.getElementById("heroThemeToggle");
 
   function syncHeroControlsIcons() {
     if (heroSoundToggle && soundToggle) {
-      var realSoundIcon = soundToggle.querySelector('i');
-      var heroSoundIcon = heroSoundToggle.querySelector('i');
+      var realSoundIcon = soundToggle.querySelector("i");
+      var heroSoundIcon = heroSoundToggle.querySelector("i");
       if (realSoundIcon && heroSoundIcon) {
         heroSoundIcon.className = realSoundIcon.className;
       }
     }
     if (heroThemeToggle && themeToggle) {
-      var realThemeIcon = themeToggle.querySelector('i');
-      var heroThemeIcon = heroThemeToggle.querySelector('i');
+      var realThemeIcon = themeToggle.querySelector("i");
+      var heroThemeIcon = heroThemeToggle.querySelector("i");
       if (realThemeIcon && heroThemeIcon) {
         heroThemeIcon.className = realThemeIcon.className;
       }
@@ -216,14 +562,14 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   if (heroSoundToggle && soundToggle) {
-    heroSoundToggle.addEventListener('click', function () {
+    heroSoundToggle.addEventListener("click", function () {
       soundToggle.click();
       setTimeout(syncHeroControlsIcons, 50);
     });
   }
 
   if (heroThemeToggle && themeToggle) {
-    heroThemeToggle.addEventListener('click', function () {
+    heroThemeToggle.addEventListener("click", function () {
       themeToggle.click();
       setTimeout(syncHeroControlsIcons, 50);
     });
@@ -233,72 +579,95 @@ document.addEventListener('DOMContentLoaded', function () {
   setTimeout(syncHeroControlsIcons, 100);
 
   /* ── Mobile Sidebar Toggle ──────────────────────────────── */
-  var mobileSidebarToggle = document.getElementById('mobileSidebarToggle');
-  var mainSidebar = document.getElementById('mainSidebar');
+  var mobileSidebarToggle = document.getElementById("mobileSidebarToggle");
+  var mainSidebar = document.getElementById("mainSidebar");
   if (mobileSidebarToggle && mainSidebar) {
-    mobileSidebarToggle.addEventListener('click', function () {
-      var active = mainSidebar.classList.toggle('open');
-      mobileSidebarToggle.setAttribute('aria-expanded', active);
-      var icon = mobileSidebarToggle.querySelector('i');
-      if (icon) icon.className = active ? 'fas fa-times' : 'fas fa-bars';
+    mobileSidebarToggle.addEventListener("click", function () {
+      var active = mainSidebar.classList.toggle("open");
+      mobileSidebarToggle.setAttribute("aria-expanded", active);
+      var icon = mobileSidebarToggle.querySelector("i");
+      if (icon) icon.className = active ? "fas fa-times" : "fas fa-bars";
     });
 
-    document.addEventListener('click', function (e) {
-      if (mainSidebar && mobileSidebarToggle &&
-          !mainSidebar.contains(e.target) && e.target !== mobileSidebarToggle &&
-          mainSidebar.classList.contains('open')) {
-        mainSidebar.classList.remove('open');
-        mobileSidebarToggle.setAttribute('aria-expanded', 'false');
-        var icon = mobileSidebarToggle.querySelector('i');
-        if (icon) icon.className = 'fas fa-bars';
+    document.addEventListener("click", function (e) {
+      if (
+        mainSidebar &&
+        mobileSidebarToggle &&
+        !mainSidebar.contains(e.target) &&
+        e.target !== mobileSidebarToggle &&
+        mainSidebar.classList.contains("open")
+      ) {
+        mainSidebar.classList.remove("open");
+        mobileSidebarToggle.setAttribute("aria-expanded", "false");
+        var icon = mobileSidebarToggle.querySelector("i");
+        if (icon) icon.className = "fas fa-bars";
       }
     });
   }
 
   if (backToTopButton) {
     var toggleBackToTop = function () {
-      backToTopButton.classList.toggle('visible', window.scrollY > 300);
+      backToTopButton.classList.toggle("visible", window.scrollY > 300);
     };
-    window.addEventListener('scroll', toggleBackToTop, { passive: true });
+    window.addEventListener("scroll", toggleBackToTop, { passive: true });
     toggleBackToTop();
 
-    backToTopButton.addEventListener('click', function () {
-      window.scrollTo({ top: 0, behavior: prefersReducedMotion() ? 'auto' : 'smooth' });
+    backToTopButton.addEventListener("click", function () {
+      window.scrollTo({
+        top: 0,
+        behavior: prefersReducedMotion() ? "auto" : "smooth",
+      });
     });
   }
 
   /* ── Cursor Glow ──────────────────────────────────────────── */
-  if (cursorGlow && !prefersReducedMotion() && html.getAttribute('data-theme') !== 'light') {
+  if (
+    cursorGlow &&
+    !prefersReducedMotion() &&
+    html.getAttribute("data-theme") !== "light"
+  ) {
     var glowTimeout;
-    document.addEventListener('pointermove', function (e) {
-      cursorGlow.style.left = e.clientX + 'px';
-      cursorGlow.style.top = e.clientY + 'px';
-      cursorGlow.style.opacity = '0.5';
+    document.addEventListener("pointermove", function (e) {
+      cursorGlow.style.left = e.clientX + "px";
+      cursorGlow.style.top = e.clientY + "px";
+      cursorGlow.style.opacity = "0.5";
       clearTimeout(glowTimeout);
-      glowTimeout = setTimeout(function () { cursorGlow.style.opacity = '0'; }, 3000);
+      glowTimeout = setTimeout(function () {
+        cursorGlow.style.opacity = "0";
+      }, 3000);
     });
-    document.addEventListener('pointerleave', function () {
-      cursorGlow.style.opacity = '0';
+    document.addEventListener("pointerleave", function () {
+      cursorGlow.style.opacity = "0";
     });
   }
 
   /* ── Gather Project Cards ─────────────────────────────────── */
-  var projectsGrid = document.querySelector('.projects-grid');
-  var projectsTemplate = document.getElementById('projectsTemplate');
-  if (projectsGrid && projectsGrid.children.length === 0 && projectsTemplate && projectsTemplate.content) {
-    Array.from(projectsTemplate.content.querySelectorAll('.project-card')).forEach(function (card) {
+  var projectsGrid = document.querySelector(".projects-grid");
+  var projectsTemplate = document.getElementById("projectsTemplate");
+  if (
+    projectsGrid &&
+    projectsGrid.children.length === 0 &&
+    projectsTemplate &&
+    projectsTemplate.content
+  ) {
+    Array.from(
+      projectsTemplate.content.querySelectorAll(".project-card")
+    ).forEach(function (card) {
       projectsGrid.appendChild(card.cloneNode(true));
     });
   }
 
   projectCards = projectsGrid
-    ? Array.from(projectsGrid.querySelectorAll('.project-card'))
-    : Array.from(document.querySelectorAll('.project-card'));
+    ? Array.from(projectsGrid.querySelectorAll(".project-card"))
+    : Array.from(document.querySelectorAll(".project-card"));
 
   projectCards.sort(function (a, b) {
-    var titleA = (a.querySelector('h3') || {}).textContent || '';
-    var titleB = (b.querySelector('h3') || {}).textContent || '';
-    return titleA.localeCompare(titleB, undefined, { sensitivity: 'base', numeric: true });
+    var titleA = (a.querySelector("h3") || {}).textContent || "";
+    var titleB = (b.querySelector("h3") || {}).textContent || "";
+    return titleA.localeCompare(titleB, undefined, {
+      sensitivity: "base",
+      numeric: true,
+    });
   });
 
   if (projectsGrid) {
@@ -309,90 +678,106 @@ document.addEventListener('DOMContentLoaded', function () {
 
   /* ── Hero Stats ───────────────────────────────────────────── */
   var totalCount = projectCards.length;
-  var gameCount = projectCards.filter(function (c) { return c.getAttribute('data-category') === 'games'; }).length;
-  var mathCount = projectCards.filter(function (c) { return c.getAttribute('data-category') === 'math'; }).length;
-  var utilityCount = projectCards.filter(function (c) { return c.getAttribute('data-category') === 'utilities'; }).length;
+  var gameCount = projectCards.filter(function (c) {
+    return c.getAttribute("data-category") === "games";
+  }).length;
+  var mathCount = projectCards.filter(function (c) {
+    return c.getAttribute("data-category") === "math";
+  }).length;
+  var utilityCount = projectCards.filter(function (c) {
+    return c.getAttribute("data-category") === "utilities";
+  }).length;
 
   if (heroProjectCount) heroProjectCount.textContent = String(totalCount);
   if (heroGameCount) heroGameCount.textContent = String(gameCount);
   if (heroMathCount) heroMathCount.textContent = String(mathCount);
   if (heroUtilityCount) heroUtilityCount.textContent = String(utilityCount);
-  if (projectCountBadge) projectCountBadge.textContent = String(totalCount) + ' projects';
+  if (projectCountBadge)
+    projectCountBadge.textContent = String(totalCount) + " projects";
 
   /* ── Explore Button ───────────────────────────────────────── */
   if (exploreBtn) {
-    exploreBtn.addEventListener('click', function () {
-      if (projectsSection) projectsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    exploreBtn.addEventListener("click", function () {
+      if (projectsSection)
+        projectsSection.scrollIntoView({ behavior: "smooth", block: "start" });
     });
   }
 
   /* ── Category Filtering ───────────────────────────────────── */
-  var sidebarTabs = document.querySelectorAll('.sidebar-tab');
+  var sidebarTabs = document.querySelectorAll(".sidebar-tab");
   var sidebarBadge = null;
 
   function applyCategoryFilter(category) {
-    if (category === 'playground') return;
+    if (category === "playground") return;
     currentCategory = category;
     syncSidebarTabs(category);
     syncStickyTabs(category);
     var visibleCount = 0;
-    var favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+    var favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
     projectCards.forEach(function (card) {
-      var cardCat = card.getAttribute('data-category');
-      var projectName = card.getAttribute('data-project');
+      var cardCat = card.getAttribute("data-category");
+      var projectName = card.getAttribute("data-project");
       var isFav = favorites.includes(projectName);
-      if (category === 'all' ||
-          (category === 'favorites' && isFav) ||
-          (category !== 'favorites' && cardCat === category)) {
-        card.style.display = '';
+      if (
+        category === "all" ||
+        (category === "favorites" && isFav) ||
+        (category !== "favorites" && cardCat === category)
+      ) {
+        card.style.display = "";
         visibleCount++;
       } else {
-        card.style.display = 'none';
+        card.style.display = "none";
       }
     });
     if (emptyState) {
-      emptyState.style.display = visibleCount === 0 ? 'block' : 'none';
+      emptyState.style.display = visibleCount === 0 ? "block" : "none";
     }
     if (projectCountBadge) {
-      projectCountBadge.textContent = String(visibleCount) + ' projects';
+      projectCountBadge.textContent = String(visibleCount) + " projects";
     }
   }
 
   function syncSidebarTabs(category) {
     sidebarTabs.forEach(function (st) {
-      var selected = st.getAttribute('data-category') === category;
-      st.classList.toggle('active', selected);
-      st.setAttribute('aria-selected', selected ? 'true' : 'false');
-      st.setAttribute('tabindex', selected ? '0' : '-1');
+      var selected = st.getAttribute("data-category") === category;
+      st.classList.toggle("active", selected);
+      st.setAttribute("aria-selected", selected ? "true" : "false");
+      st.setAttribute("tabindex", selected ? "0" : "-1");
     });
   }
 
   function syncStickyTabs(category) {
     stickyTabs.forEach(function (st) {
-      var selected = st.getAttribute('data-sticky-category') === category;
-      st.classList.toggle('active', selected);
-      st.setAttribute('aria-selected', selected ? 'true' : 'false');
-      st.setAttribute('tabindex', selected ? '0' : '-1');
+      var selected = st.getAttribute("data-sticky-category") === category;
+      st.classList.toggle("active", selected);
+      st.setAttribute("aria-selected", selected ? "true" : "false");
+      st.setAttribute("tabindex", selected ? "0" : "-1");
     });
   }
 
   /* ── Playground Section Toggle ────────────────────────────── */
   function showProjectsSection() {
     playgroundActive = false;
-    if (playgroundSection) playgroundSection.style.display = 'none';
-    if (projectsSection) projectsSection.style.display = '';
-    if (window.playgroundAPI && typeof window.playgroundAPI.deactivate === 'function') {
+    if (playgroundSection) playgroundSection.style.display = "none";
+    if (projectsSection) projectsSection.style.display = "";
+    if (
+      window.playgroundAPI &&
+      typeof window.playgroundAPI.deactivate === "function"
+    ) {
       window.playgroundAPI.deactivate();
     }
   }
 
   function showPlaygroundSection() {
     playgroundActive = true;
-    syncStickyTabs('playground');
-    if (projectsSection) projectsSection.style.display = 'none';
+    syncStickyTabs("playground");
+    if (projectsSection) projectsSection.style.display = "none";
     if (playgroundSection) {
-      playgroundSection.style.display = '';
-      if (window.playgroundAPI && typeof window.playgroundAPI.activate === 'function') {
+      playgroundSection.style.display = "";
+      if (
+        window.playgroundAPI &&
+        typeof window.playgroundAPI.activate === "function"
+      ) {
         window.playgroundAPI.activate();
       }
     }
@@ -400,143 +785,364 @@ document.addEventListener('DOMContentLoaded', function () {
 
   /* ── Sidebar Tabs ─────────────────────────────────────────── */
   sidebarTabs.forEach(function (st) {
-    st.addEventListener('click', function () {
-      var category = st.getAttribute('data-category');
-      
-      var pageCategory = document.body.getAttribute('data-page');
+    st.addEventListener("click", function () {
+      var category = st.getAttribute("data-category");
+
+      var pageCategory = document.body.getAttribute("data-page");
       if (pageCategory) {
         // We are on a subpage (games, math, or utilities)
         if (category === pageCategory) {
-          var grid = document.getElementById('projectsGrid');
-          if (grid) grid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          var grid = document.getElementById("projectsGrid");
+          if (grid) grid.scrollIntoView({ behavior: "smooth", block: "start" });
           return;
         }
         var pageMap = {
-          'all': 'index.html',
-          'games': 'games.html',
-          'math': 'math.html',
-          'utilities': 'utilities.html',
-          'favorites': 'index.html?category=favorites',
-          'playground': 'index.html?category=playground'
+          all: "index.html",
+          games: "games.html",
+          math: "math.html",
+          utilities: "utilities.html",
+          favorites: "index.html?category=favorites",
+          playground: "index.html?category=playground",
         };
-        window.location.href = pageMap[category] || 'index.html';
+        window.location.href = pageMap[category] || "index.html";
         return;
       }
 
       syncSidebarTabs(category);
       syncStickyTabs(category);
 
-      if (category === 'playground') {
+      if (category === "playground") {
         showPlaygroundSection();
-        if (playgroundSection) playgroundSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        if (playgroundSection)
+          playgroundSection.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+          });
       } else {
         showProjectsSection();
         applyCategoryFilter(category);
-        if (projectsSection) projectsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        if (projectsSection)
+          projectsSection.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+          });
       }
     });
   });
 
   /* ── Sticky Tabs ──────────────────────────────────────────── */
   stickyTabs.forEach(function (st) {
-    st.addEventListener('click', function () {
-      var category = st.getAttribute('data-sticky-category');
+    st.addEventListener("click", function () {
+      var category = st.getAttribute("data-sticky-category");
       syncStickyTabs(category);
       syncSidebarTabs(category);
 
-      if (category === 'playground') {
+      if (category === "playground") {
         showPlaygroundSection();
-        if (playgroundSection) playgroundSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        if (playgroundSection)
+          playgroundSection.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+          });
       } else {
         showProjectsSection();
         applyCategoryFilter(category);
-        if (projectsSection) projectsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        if (projectsSection)
+          projectsSection.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+          });
       }
     });
   });
 
   /* ── Sticky Filter Bar Visibility ─────────────────────────── */
   if (stickyFilterBar && heroSection) {
-    var heroObserver = new IntersectionObserver(function (entries) {
-      entries.forEach(function (entry) {
-        stickyFilterBar.classList.toggle('visible', !entry.isIntersecting);
-      });
-    }, { threshold: 0, rootMargin: '-80px 0px 0px 0px' });
+    var heroObserver = new IntersectionObserver(
+      function (entries) {
+        entries.forEach(function (entry) {
+          stickyFilterBar.classList.toggle("visible", !entry.isIntersecting);
+        });
+      },
+      { threshold: 0, rootMargin: "-80px 0px 0px 0px" }
+    );
     heroObserver.observe(heroSection);
 
-    window.addEventListener('scroll', function () {
-      var navH = navbar ? navbar.getBoundingClientRect().height : 72;
-      stickyFilterBar.style.top = (navH + 16) + 'px';
-    }, { passive: true });
+    window.addEventListener(
+      "scroll",
+      function () {
+        var navH = navbar ? navbar.getBoundingClientRect().height : 72;
+        stickyFilterBar.style.top = navH + 16 + "px";
+      },
+      { passive: true }
+    );
   }
 
   /* ── Random Project ───────────────────────────────────────── */
   function openRandomProject(trigger) {
-    var visible = projectCards.filter(function (c) { return c.style.display !== 'none'; });
+    var visible = projectCards.filter(function (c) {
+      return c.style.display !== "none";
+    });
     var pool = visible.length ? visible : projectCards;
     var pick = pool[Math.floor(Math.random() * pool.length)];
-    var name = pick.getAttribute('data-project');
-    if (name && typeof openProjectSafe === 'function') {
+    var name = pick.getAttribute("data-project");
+    if (name && typeof openProjectSafe === "function") {
       openProjectSafe(name, trigger);
     }
   }
 
+// Initialize – restore persisted filter state on page load (fix: issue #601)
+renderRecentSearches();
+
+// Wire up search input — persist query to sessionStorage on every keystroke
+if (searchInput) {
+    const debouncedSearch = debounce(() => {
+        currentSearchQuery = searchInput.value.trim();
+        sessionStorage.setItem('filterSearchQuery', currentSearchQuery);
+        // Toggle clear button
+        if (searchClear) searchClear.style.display = currentSearchQuery ? 'inline-flex' : 'none';
+        if (searchShortcut) searchShortcut.style.display = currentSearchQuery ? 'none' : '';
+        performSearch();
+        renderSuggestions(currentSearchQuery.toLowerCase());
+    }, 200);
+
+    searchInput.addEventListener('input', debouncedSearch);
+
+    // Ctrl+K shortcut to focus search
+    document.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+            e.preventDefault();
+            searchInput.focus();
+            searchInput.select();
+        }
+    });
+}
+
+// Wire up clear button
+if (searchClear) {
+    searchClear.addEventListener('click', () => {
+        searchInput.value = '';
+        currentSearchQuery = '';
+        sessionStorage.removeItem('filterSearchQuery');
+        searchClear.style.display = 'none';
+        if (searchShortcut) searchShortcut.style.display = '';
+        performSearch();
+        searchInput.focus();
+    });
+}
+
+// Restore category tab active state
+if (currentCategory && currentCategory !== 'all') {
+    tabs.forEach(tab => {
+        const selected = tab.getAttribute('data-category') === currentCategory;
+        tab.classList.toggle('active', selected);
+        tab.setAttribute('aria-selected', selected ? 'true' : 'false');
+        tab.setAttribute('tabindex', selected ? '0' : '-1');
+    });
+    applyCategoryFilter(currentCategory);
+}
+
+// Restore search query
+if (currentSearchQuery && searchInput) {
+    searchInput.value = currentSearchQuery;
+    if (searchClear) searchClear.style.display = 'inline-flex';
+    if (searchShortcut) searchShortcut.style.display = 'none';
+    performSearch();
+}
+
+// Modal Management
+const modal = document.getElementById('projectModal');
+const modalClose = document.getElementById('modalClose');
+const modalBody = document.getElementById('modalBody');
+const modalDialogTitle = document.getElementById('modalDialogTitle');
+
+let lastFocusedElement = null;
+let modalTabTrapHandler = null;
+
+function getFocusableElements(root) {
+    const selector = 'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+    return Array.from(root.querySelectorAll(selector)).filter(el => !el.closest('[aria-hidden="true"]') && !el.classList.contains('visually-hidden'));
+}
+
+function trapFocus(modalEl) {
+    let handler = (e) => {
+        if (e.key !== 'Tab' || !modalEl.classList.contains('active')) return;
+        const focusables = getFocusableElements(modalEl);
+        if (!focusables.length) return;
+        const first = focusables[0];
+        const last = focusables[focusables.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+            e.preventDefault();
+            last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+            e.preventDefault();
+            first.focus();
+        }
+    };
+    document.addEventListener('keydown', handler, true);
+    return () => document.removeEventListener('keydown', handler, true);
+}
+
+function safeRun(fn) {
+    try { fn(); } catch (err) { console.error(err); }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const html = document.documentElement;
+    const themeToggle = document.getElementById('themeToggle');
+    const soundToggle = document.getElementById('soundToggle');
+    const backToTop = document.getElementById('backToTop');
+    const tabs = Array.from(document.querySelectorAll('.tab'));
+    const projectCards = Array.from(document.querySelectorAll('.project-card'));
+    const modal = document.getElementById('projectModal');
+    const modalClose = document.getElementById('modalClose');
+    const modalBody = document.getElementById('modalBody');
+    const modalTitle = document.getElementById('modalDialogTitle');
+
+    // Theme
+    if (themeToggle) {
+        const saved = localStorage.getItem('theme') || 'dark';
+        html.setAttribute('data-theme', saved);
+        themeToggle.addEventListener('click', () => {
+            const cur = html.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+            html.setAttribute('data-theme', cur);
+            localStorage.setItem('theme', cur);
+        });
+    }
+
+    // Sound (safe)
+    if (soundToggle) {
+        const update = () => {
+            if (window.audioController) soundToggle.innerHTML = window.audioController.isMuted ? '<i class="fas fa-volume-mute"></i>' : '<i class="fas fa-volume-up"></i>';
+        };
+        update();
+        soundToggle.addEventListener('click', () => {
+            if (window.audioController && typeof window.audioController.toggleMute === 'function') {
+                const muted = window.audioController.toggleMute();
+                update();
+                if (!muted && typeof window.audioController.play === 'function') window.audioController.play('click');
+            }
+        });
+    }
+
+    // Tabs
+    function applyFilter(category) {
+        projectCards.forEach(card => {
+            const cat = card.getAttribute('data-category') || 'all';
+            card.style.display = (category === 'all' || cat === category) ? '' : 'none';
+        });
+    }
+    tabs.forEach(tab => tab.addEventListener('click', () => { tabs.forEach(t => t.classList.remove('active')); tab.classList.add('active'); applyFilter(tab.getAttribute('data-category') || 'all'); }));
+
+    // Modal helpers
+    let removeTrap = null;
+    function openProjectSafe(name, trigger) {
+        if (!modal || !modalBody) return;
+        lastFocusedElement = trigger || document.activeElement;
+        if (modalTitle && trigger) {
+            const card = trigger.closest('.project-card');
+            const h = card?.querySelector('h3')?.textContent?.trim();
+            modalTitle.textContent = h || (name || 'Project');
+        }
+        modal.classList.add('active');
+        modal.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+        setMainInert(true);
+
+        // load content safely
+        safeRun(() => {
+            if (typeof getProjectHTML === 'function') {
+                modalBody.innerHTML = getProjectHTML(name) || '<div style="padding:1rem">Project content unavailable.</div>';
+            } else {
+                modalBody.innerHTML = '<div style="padding:1rem">Project content unavailable.</div>';
+            }
+            if (typeof initializeProject === 'function') initializeProject(name);
+        });
+
+        // focus trap
+        removeTrap = trapFocus(modal);
+        // initial focus
+        const focusables = getFocusableElements(modalBody);
+        (focusables[0] || modalClose)?.focus();
+    }
+
+    function closeProjectSafe() {
+        if (!modal || !modal.classList.contains('active')) return;
+        modal.classList.remove('active');
+        modal.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+        setMainInert(false);
+        if (removeTrap) { removeTrap(); removeTrap = null; }
+        if (lastFocusedElement) { lastFocusedElement.focus(); lastFocusedElement = null; }
+        // Fix #601: re-apply category filter and search query after modal closes
+        applyCategoryFilter(currentCategory);
+        if (currentSearchQuery) performSearch();
+    }
+});
   if (randomProjectBtn) {
-    randomProjectBtn.addEventListener('click', function () { openRandomProject(randomProjectBtn); });
+    randomProjectBtn.addEventListener("click", function () {
+      openRandomProject(randomProjectBtn);
+    });
   }
   if (randomProjectBtnSidebar) {
-    randomProjectBtnSidebar.addEventListener('click', function () { openRandomProject(randomProjectBtnSidebar); });
+    randomProjectBtnSidebar.addEventListener("click", function () {
+      openRandomProject(randomProjectBtnSidebar);
+    });
   }
 
   /* ── Init sidebar ─────────────────────────────────────────── */
-  var pageCategory = document.body.getAttribute('data-page');
+  var pageCategory = document.body.getAttribute("data-page");
   if (sidebarTabs.length) {
     if (pageCategory) {
       syncSidebarTabs(pageCategory);
     } else {
-      syncSidebarTabs('all');
+      syncSidebarTabs("all");
     }
   }
-  if (stickyTabs.length) syncStickyTabs('all');
+  if (stickyTabs.length) syncStickyTabs("all");
 
   /* ── Sidebar Active Scroll Observer ───────────────────────── */
   if (!pageCategory && projectsSection) {
     // On homepage, observe projectsSection to toggle sidebar-active class
-    var sidebarActiveObserver = new IntersectionObserver(function (entries) {
-      entries.forEach(function (entry) {
-        var isVisible = entry.isIntersecting || entry.boundingClientRect.top < 200;
-        document.body.classList.toggle('sidebar-active', isVisible);
-      });
-    }, { threshold: 0.05 });
+    var sidebarActiveObserver = new IntersectionObserver(
+      function (entries) {
+        entries.forEach(function (entry) {
+          var isVisible =
+            entry.isIntersecting || entry.boundingClientRect.top < 200;
+          document.body.classList.toggle("sidebar-active", isVisible);
+        });
+      },
+      { threshold: 0.05 }
+    );
     sidebarActiveObserver.observe(projectsSection);
   } else if (pageCategory) {
     // On subpages, always ensure sidebar is active
-    document.body.classList.add('sidebar-active');
+    document.body.classList.add("sidebar-active");
   }
 
   /* ── Search Kbd Hint on Sidebar Activation ─────────────────── */
-  var searchKbdHint = document.getElementById('searchKbdHint');
+  var searchKbdHint = document.getElementById("searchKbdHint");
   var kbdHintTimer;
 
   function showKbdHint() {
     if (!searchKbdHint) return;
     clearTimeout(kbdHintTimer);
-    searchKbdHint.classList.add('visible');
+    searchKbdHint.classList.add("visible");
     kbdHintTimer = setTimeout(function () {
-      searchKbdHint.classList.remove('visible');
+      searchKbdHint.classList.remove("visible");
     }, 3000); // auto-dismiss after 3s
   }
 
   // Watch for sidebar-active class being added to body
   var bodyClassObserver = new MutationObserver(function (mutations) {
     mutations.forEach(function (mutation) {
-      if (mutation.attributeName === 'class') {
-        var isActive = document.body.classList.contains('sidebar-active');
+      if (mutation.attributeName === "class") {
+        var isActive = document.body.classList.contains("sidebar-active");
         if (isActive) {
           showKbdHint();
         } else {
           clearTimeout(kbdHintTimer);
-          if (searchKbdHint) searchKbdHint.classList.remove('visible');
+          if (searchKbdHint) searchKbdHint.classList.remove("visible");
         }
       }
     });
@@ -546,9 +1152,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // Hide hint when user focuses the search input
   if (searchInput) {
-    searchInput.addEventListener('focus', function () {
+    searchInput.addEventListener("focus", function () {
       clearTimeout(kbdHintTimer);
-      if (searchKbdHint) searchKbdHint.classList.remove('visible');
+      if (searchKbdHint) searchKbdHint.classList.remove("visible");
     });
   }
 
@@ -559,35 +1165,41 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!query) return [];
     var matches = [];
     projectCards.forEach(function (card) {
-      var category = card.getAttribute('data-category');
-      var title = (card.querySelector('h3') || {}).textContent || '';
-      var desc = (card.querySelector('p') || {}).textContent || '';
-      var tags = (card.getAttribute('data-tags') || '').toLowerCase();
+      var category = card.getAttribute("data-category");
+      var title = (card.querySelector("h3") || {}).textContent || "";
+      var desc = (card.querySelector("p") || {}).textContent || "";
+      var tags = (card.getAttribute("data-tags") || "").toLowerCase();
       var q = query.toLowerCase();
 
-      var catMatch = currentCategory === 'all' || category === currentCategory;
-      var searchMatch = title.toLowerCase().includes(q) ||
-                        desc.toLowerCase().includes(q) ||
-                        tags.includes(q);
+      var catMatch = currentCategory === "all" || category === currentCategory;
+      var searchMatch =
+        title.toLowerCase().includes(q) ||
+        desc.toLowerCase().includes(q) ||
+        tags.includes(q);
 
       if (catMatch && searchMatch) {
-        matches.push({ card: card, title: title, tags: tags, category: category });
+        matches.push({
+          card: card,
+          title: title,
+          tags: tags,
+          category: category,
+        });
       }
     });
     return matches;
   }
 
   function highlightText(container, text, query) {
-    var safe = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    var parts = text.split(new RegExp('(' + safe + ')', 'gi'));
+    var safe = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    var parts = text.split(new RegExp("(" + safe + ")", "gi"));
     parts.forEach(function (part) {
       if (part.toLowerCase() === query.toLowerCase()) {
-        var mark = document.createElement('mark');
-        mark.style.background = 'var(--accent-soft)';
-        mark.style.color = 'var(--accent)';
-        mark.style.fontWeight = '600';
-        mark.style.borderRadius = '2px';
-        mark.style.padding = '0 2px';
+        var mark = document.createElement("mark");
+        mark.style.background = "var(--accent-soft)";
+        mark.style.color = "var(--accent)";
+        mark.style.fontWeight = "600";
+        mark.style.borderRadius = "2px";
+        mark.style.padding = "0 2px";
         mark.textContent = part;
         container.appendChild(mark);
       } else if (part) {
@@ -597,56 +1209,61 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function closeDropdown() {
-    if (searchDropdown) searchDropdown.classList.remove('active');
+    if (searchDropdown) searchDropdown.classList.remove("active");
   }
 
   function renderRecentSearches() {
-    if (noResultsMessage) noResultsMessage.style.display = 'none';
+    if (noResultsMessage) noResultsMessage.style.display = "none";
     if (!recentSearchesSection) return;
 
     if (recentSearches.length === 0) {
-      recentSearchesSection.style.display = 'none';
-      if (tipsSection) tipsSection.style.display = 'block';
-      if (resultsSection) resultsSection.style.display = 'none';
+      recentSearchesSection.style.display = "none";
+      if (tipsSection) tipsSection.style.display = "block";
+      if (resultsSection) resultsSection.style.display = "none";
       return;
     }
 
     if (recentSearchesList) {
-      recentSearchesList.innerHTML = '';
+      recentSearchesList.innerHTML = "";
       recentSearches.slice(0, 5).forEach(function (search) {
-        var item = document.createElement('div');
-        item.className = 'dropdown-recent-item';
-        var text = document.createElement('div');
-        text.className = 'dropdown-recent-text';
+        var item = document.createElement("div");
+        item.className = "dropdown-recent-item";
+        var text = document.createElement("div");
+        text.className = "dropdown-recent-text";
 
-        var clock = document.createElement('i');
-        clock.className = 'fas fa-history';
-        clock.style.opacity = '0.5';
-        clock.style.fontSize = '0.8rem';
+        var clock = document.createElement("i");
+        clock.className = "fas fa-history";
+        clock.style.opacity = "0.5";
+        clock.style.fontSize = "0.8rem";
 
-        var label = document.createElement('span');
+        var label = document.createElement("span");
         label.textContent = search;
 
         text.append(clock, label);
 
-        var removeBtn = document.createElement('button');
-        removeBtn.className = 'dropdown-recent-remove';
-        removeBtn.setAttribute('aria-label', 'Remove search');
+        var removeBtn = document.createElement("button");
+        removeBtn.className = "dropdown-recent-remove";
+        removeBtn.setAttribute("aria-label", "Remove search");
         removeBtn.innerHTML = '<i class="fas fa-times"></i>';
 
         item.append(text, removeBtn);
 
-        label.addEventListener('click', function () {
+        label.addEventListener("click", function () {
           if (searchInput) searchInput.value = search;
           currentSearchQuery = search;
           performSearch();
           closeDropdown();
         });
 
-        removeBtn.addEventListener('click', function (e) {
+        removeBtn.addEventListener("click", function (e) {
           e.stopPropagation();
-          recentSearches = recentSearches.filter(function (s) { return s !== search; });
-          localStorage.setItem('recentSearches', JSON.stringify(recentSearches));
+          recentSearches = recentSearches.filter(function (s) {
+            return s !== search;
+          });
+          localStorage.setItem(
+            "recentSearches",
+            JSON.stringify(recentSearches)
+          );
           renderRecentSearches();
         });
 
@@ -654,54 +1271,61 @@ document.addEventListener('DOMContentLoaded', function () {
       });
     }
 
-    recentSearchesSection.style.display = 'block';
-    if (resultsSection) resultsSection.style.display = 'none';
-    if (tipsSection) tipsSection.style.display = 'block';
+    recentSearchesSection.style.display = "block";
+    if (resultsSection) resultsSection.style.display = "none";
+    if (tipsSection) tipsSection.style.display = "block";
   }
 
   function renderSuggestions(query) {
-    if (searchLoader) searchLoader.style.display = 'none';
-    if (!query) { renderRecentSearches(); return; }
+    if (searchLoader) searchLoader.style.display = "none";
+    if (!query) {
+      renderRecentSearches();
+      return;
+    }
 
     var matches = getMatchingProjects(query);
 
     if (matches.length === 0) {
-      if (resultsSection) resultsSection.style.display = 'none';
-      if (recentSearchesSection) recentSearchesSection.style.display = 'none';
-      if (tipsSection) tipsSection.style.display = 'block';
-      if (noResultsMessage) noResultsMessage.style.display = 'block';
+      if (resultsSection) resultsSection.style.display = "none";
+      if (recentSearchesSection) recentSearchesSection.style.display = "none";
+      if (tipsSection) tipsSection.style.display = "block";
+      if (noResultsMessage) noResultsMessage.style.display = "block";
       return;
     }
 
-    if (noResultsMessage) noResultsMessage.style.display = 'none';
+    if (noResultsMessage) noResultsMessage.style.display = "none";
 
     if (resultsList) {
-      resultsList.innerHTML = '';
+      resultsList.innerHTML = "";
       matches.slice(0, 8).forEach(function (project, index) {
-        var item = document.createElement('div');
-        item.className = 'dropdown-item' + (index === selectedSuggestionIndex ? ' selected' : '');
+        var item = document.createElement("div");
+        item.className =
+          "dropdown-item" +
+          (index === selectedSuggestionIndex ? " selected" : "");
 
-        var iconBox = document.createElement('div');
-        iconBox.className = 'dropdown-item-icon';
-        var banner = project.card.querySelector('.card-banner');
+        var iconBox = document.createElement("div");
+        iconBox.className = "dropdown-item-icon";
+        var banner = project.card.querySelector(".card-banner");
         if (banner) {
-          var img = document.createElement('img');
+          var img = document.createElement("img");
           img.src = banner.src;
-          img.alt = '';
+          img.alt = "";
           iconBox.appendChild(img);
         }
 
-        var titleBox = document.createElement('div');
-        titleBox.className = 'dropdown-item-text';
+        var titleBox = document.createElement("div");
+        titleBox.className = "dropdown-item-text";
         highlightText(titleBox, project.title, query);
 
-        var tag = document.createElement('span');
-        tag.className = 'dropdown-item-tag';
+        var tag = document.createElement("span");
+        tag.className = "dropdown-item-tag";
         tag.textContent = project.category;
 
         item.append(iconBox, titleBox, tag);
-        item.addEventListener('click', function () { selectSuggestion(project.title); });
-        item.addEventListener('mouseenter', function () {
+        item.addEventListener("click", function () {
+          selectSuggestion(project.title);
+        });
+        item.addEventListener("mouseenter", function () {
           selectedSuggestionIndex = index;
           updateSuggestionHighlight();
         });
@@ -709,17 +1333,17 @@ document.addEventListener('DOMContentLoaded', function () {
       });
     }
 
-    if (resultsSection) resultsSection.style.display = 'block';
-    if (recentSearchesSection) recentSearchesSection.style.display = 'none';
-    if (tipsSection) tipsSection.style.display = 'none';
+    if (resultsSection) resultsSection.style.display = "block";
+    if (recentSearchesSection) recentSearchesSection.style.display = "none";
+    if (tipsSection) tipsSection.style.display = "none";
     selectedSuggestionIndex = -1;
   }
 
   function updateSuggestionHighlight() {
     if (!resultsList) return;
-    var items = resultsList.querySelectorAll('.dropdown-item');
+    var items = resultsList.querySelectorAll(".dropdown-item");
     items.forEach(function (item, i) {
-      item.classList.toggle('selected', i === selectedSuggestionIndex);
+      item.classList.toggle("selected", i === selectedSuggestionIndex);
     });
   }
 
@@ -730,7 +1354,10 @@ document.addEventListener('DOMContentLoaded', function () {
     performSearch();
     closeDropdown();
     if (projectsSection) {
-      projectsSection.scrollIntoView({ behavior: prefersReducedMotion() ? 'auto' : 'smooth', block: 'start' });
+      projectsSection.scrollIntoView({
+        behavior: prefersReducedMotion() ? "auto" : "smooth",
+        block: "start",
+      });
     }
   }
 
@@ -738,53 +1365,61 @@ document.addEventListener('DOMContentLoaded', function () {
     var query = currentSearchQuery;
     if (!query) {
       applyCategoryFilter(currentCategory);
-      if (emptyStateHint) emptyStateHint.textContent = 'Try adjusting your search or category filter.';
+      if (emptyStateHint)
+        emptyStateHint.textContent =
+          "Try adjusting your search or category filter.";
       return;
     }
 
-    if (currentCategory !== 'all') {
-      currentCategory = 'all';
-      syncSidebarTabs('all');
-      syncStickyTabs('all');
+    if (currentCategory !== "all") {
+      currentCategory = "all";
+      syncSidebarTabs("all");
+      syncStickyTabs("all");
     }
 
-    recentSearches = recentSearches.filter(function (s) { return s !== query; });
+    recentSearches = recentSearches.filter(function (s) {
+      return s !== query;
+    });
     recentSearches.unshift(query);
     recentSearches = recentSearches.slice(0, 10);
-    localStorage.setItem('recentSearches', JSON.stringify(recentSearches));
+    localStorage.setItem("recentSearches", JSON.stringify(recentSearches));
 
     var visibleCount = 0;
-    var favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+    var favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
     projectCards.forEach(function (card) {
-      var category = card.getAttribute('data-category');
-      var title = (card.querySelector('h3') || {}).textContent || '';
-      var desc = (card.querySelector('p') || {}).textContent || '';
-      var tags = (card.getAttribute('data-tags') || '').toLowerCase();
-      var projectName = card.getAttribute('data-project');
+      var category = card.getAttribute("data-category");
+      var title = (card.querySelector("h3") || {}).textContent || "";
+      var desc = (card.querySelector("p") || {}).textContent || "";
+      var tags = (card.getAttribute("data-tags") || "").toLowerCase();
+      var projectName = card.getAttribute("data-project");
       var isFav = favorites.includes(projectName);
 
-      var catMatch = (currentCategory === 'all') ||
-                     (currentCategory === 'favorites' && isFav) ||
-                     (currentCategory !== 'favorites' && category === currentCategory);
-      var searchMatch = title.toLowerCase().includes(query) ||
-                        desc.toLowerCase().includes(query) ||
-                        tags.includes(query);
+      var catMatch =
+        currentCategory === "all" ||
+        (currentCategory === "favorites" && isFav) ||
+        (currentCategory !== "favorites" && category === currentCategory);
+      var searchMatch =
+        title.toLowerCase().includes(query) ||
+        desc.toLowerCase().includes(query) ||
+        tags.includes(query);
 
       if (catMatch && searchMatch) {
-        card.style.display = '';
+        card.style.display = "";
         visibleCount++;
       } else {
-        card.style.display = 'none';
+        card.style.display = "none";
       }
     });
 
     if (emptyState) {
-      emptyState.style.display = visibleCount === 0 ? 'block' : 'none';
+      emptyState.style.display = visibleCount === 0 ? "block" : "none";
       if (visibleCount === 0 && emptyStateHint) {
-        emptyStateHint.textContent = 'No projects match "' + query + '". Try a different keyword.';
+        emptyStateHint.textContent =
+          'No projects match "' + query + '". Try a different keyword.';
       }
     }
-    if (projectCountBadge) projectCountBadge.textContent = String(visibleCount) + ' projects';
+    if (projectCountBadge)
+      projectCountBadge.textContent = String(visibleCount) + " projects";
   }
 
   if (searchInput) {
@@ -792,33 +1427,40 @@ document.addEventListener('DOMContentLoaded', function () {
       renderSuggestions(query);
     }, 200);
 
-    searchInput.addEventListener('input', function (e) {
+    searchInput.addEventListener("input", function (e) {
       var query = e.target.value.trim().toLowerCase();
       currentSearchQuery = query;
-      if (searchLoader) searchLoader.style.display = query ? 'block' : 'none';
+      if (searchLoader) searchLoader.style.display = query ? "block" : "none";
       debouncedSearch(query);
       performSearch();
     });
 
-    searchInput.addEventListener('focus', function () {
-      if (searchDropdown) searchDropdown.classList.add('active');
+    searchInput.addEventListener("focus", function () {
+      if (searchDropdown) searchDropdown.classList.add("active");
       if (!currentSearchQuery) renderRecentSearches();
     });
 
-    searchInput.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape') { closeDropdown(); searchInput.blur(); }
+    searchInput.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") {
+        closeDropdown();
+        searchInput.blur();
+      }
     });
   }
 
-  document.addEventListener('click', function (e) {
-    if (searchDropdown && searchInput &&
-        !searchDropdown.contains(e.target) && e.target !== searchInput) {
+  document.addEventListener("click", function (e) {
+    if (
+      searchDropdown &&
+      searchInput &&
+      !searchDropdown.contains(e.target) &&
+      e.target !== searchInput
+    ) {
       closeDropdown();
     }
   });
 
-  document.addEventListener('keydown', function (e) {
-    if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+  document.addEventListener("keydown", function (e) {
+    if ((e.ctrlKey || e.metaKey) && e.key === "k") {
       e.preventDefault();
       if (searchInput) searchInput.focus();
     }
@@ -830,125 +1472,144 @@ document.addEventListener('DOMContentLoaded', function () {
      MODAL
      ═══════════════════════════════════════════════════════════════ */
   function getFocusableElements(root) {
-    var sel = 'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+    var sel =
+      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
     return Array.from(root.querySelectorAll(sel)).filter(function (el) {
-      return !el.closest('[aria-hidden="true"]') && !el.classList.contains('visually-hidden');
+      return (
+        !el.closest('[aria-hidden="true"]') &&
+        !el.classList.contains("visually-hidden")
+      );
     });
   }
 
   function trapFocus(modalEl) {
     var handler = function (e) {
-      if (e.key !== 'Tab' || !modalEl.classList.contains('active')) return;
+      if (e.key !== "Tab" || !modalEl.classList.contains("active")) return;
       var focusables = getFocusableElements(modalEl);
       if (!focusables.length) return;
       var first = focusables[0];
       var last = focusables[focusables.length - 1];
       if (e.shiftKey && document.activeElement === first) {
-        e.preventDefault(); last.focus({ preventScroll: true });
+        e.preventDefault();
+        last.focus({ preventScroll: true });
       } else if (!e.shiftKey && document.activeElement === last) {
-        e.preventDefault(); first.focus({ preventScroll: true });
+        e.preventDefault();
+        first.focus({ preventScroll: true });
       }
     };
-    document.addEventListener('keydown', handler, true);
-    return function () { document.removeEventListener('keydown', handler, true); };
+    document.addEventListener("keydown", handler, true);
+    return function () {
+      document.removeEventListener("keydown", handler, true);
+    };
   }
 
   function openProjectSafe(name, trigger) {
     if (!modal || !modalBody) return;
     lastFocusedElement = trigger || document.activeElement;
-    modal.classList.add('active');
-    modal.setAttribute('aria-hidden', 'false');
-    var scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
-    document.body.style.paddingRight = scrollbarWidth + 'px';
-    document.body.style.overflow = 'hidden';
+    modal.classList.add("active");
+    modal.setAttribute("aria-hidden", "false");
+    var scrollbarWidth =
+      window.innerWidth - document.documentElement.clientWidth;
+    document.body.style.paddingRight = scrollbarWidth + "px";
+    document.body.style.overflow = "hidden";
     setMainInert(true);
 
     safeRun(function () {
-      if (typeof getProjectHTML === 'function') {
-        modalBody.innerHTML = getProjectHTML(name) || '<div style="padding:1rem;color:var(--text-secondary)">Project content unavailable.</div>';
+      if (typeof getProjectHTML === "function") {
+        modalBody.innerHTML =
+          getProjectHTML(name) ||
+          '<div style="padding:1rem;color:var(--text-secondary)">Project content unavailable.</div>';
       } else {
-        modalBody.innerHTML = '<div style="padding:1rem;color:var(--text-secondary)">Project content unavailable.</div>';
+        modalBody.innerHTML =
+          '<div style="padding:1rem;color:var(--text-secondary)">Project content unavailable.</div>';
       }
-      if (typeof initializeProject === 'function') initializeProject(name);
+      if (typeof initializeProject === "function") initializeProject(name);
       setupModalInfoButton(name);
-      
+
       // Inject info button next to the title (works for all projects)
-var projectContent = modalBody.querySelector('.project-content');
-if (projectContent) {
-    // Try to find the title element (could be h2, or other heading)
-    var firstHeading = projectContent.querySelector('h2, h3, .resume-analyzer-copy h2, .pet-title');
-    
-    if (!firstHeading) {
-        // If no heading found, look for any element with a title-like class
-        firstHeading = projectContent.querySelector('[class*="title"], [class*="header"] h2');
-    }
-    
-    if (firstHeading && !projectContent.querySelector('.inline-info-btn')) {
-        // Create info button
-        var infoBtn = document.createElement('button');
-        infoBtn.className = 'inline-info-btn';
-        infoBtn.innerHTML = 'ⓘ';
-        infoBtn.setAttribute('aria-label', 'How to use this project');
-        
-        // Style the button
-        infoBtn.style.marginLeft = '12px';
-        infoBtn.style.background = 'none';
-        infoBtn.style.border = 'none';
-        infoBtn.style.fontSize = '1.3rem';
-        infoBtn.style.cursor = 'pointer';
-        infoBtn.style.color = 'var(--accent)';
-        infoBtn.style.verticalAlign = 'middle';
-        
-        infoBtn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            if (typeof getProjectInstructions === 'function') {
-                var info = getProjectInstructions(name);
-                showInfoModal(info.title, info.steps);
-            }
-        });
-        
-        // Make heading display inline if it's a block element
-        if (firstHeading.style.display !== 'inline-block') {
-            firstHeading.style.display = 'inline-block';
+      var projectContent = modalBody.querySelector(".project-content");
+      if (projectContent) {
+        // Try to find the title element (could be h2, or other heading)
+        var firstHeading = projectContent.querySelector(
+          "h2, h3, .resume-analyzer-copy h2, .pet-title"
+        );
+
+        if (!firstHeading) {
+          // If no heading found, look for any element with a title-like class
+          firstHeading = projectContent.querySelector(
+            '[class*="title"], [class*="header"] h2'
+          );
         }
-        firstHeading.appendChild(infoBtn);
-    }
-}
+
+        if (firstHeading && !projectContent.querySelector(".inline-info-btn")) {
+          // Create info button
+          var infoBtn = document.createElement("button");
+          infoBtn.className = "inline-info-btn";
+          infoBtn.innerHTML = "ⓘ";
+          infoBtn.setAttribute("aria-label", "How to use this project");
+
+          // Style the button
+          infoBtn.style.marginLeft = "12px";
+          infoBtn.style.background = "none";
+          infoBtn.style.border = "none";
+          infoBtn.style.fontSize = "1.3rem";
+          infoBtn.style.cursor = "pointer";
+          infoBtn.style.color = "var(--accent)";
+          infoBtn.style.verticalAlign = "middle";
+
+          infoBtn.addEventListener("click", function (e) {
+            e.stopPropagation();
+            if (typeof getProjectInstructions === "function") {
+              var info = getProjectInstructions(name);
+              showInfoModal(info.title, info.steps);
+            }
+          });
+
+          // Make heading display inline if it's a block element
+          if (firstHeading.style.display !== "inline-block") {
+            firstHeading.style.display = "inline-block";
+          }
+          firstHeading.appendChild(infoBtn);
+        }
+      }
     });
 
     removeTrap = trapFocus(modal);
     var focusables = getFocusableElements(modalBody);
     var firstFocusable = focusables[0] || modalClose;
-    if (firstFocusable && typeof firstFocusable.focus === 'function') {
+    if (firstFocusable && typeof firstFocusable.focus === "function") {
       firstFocusable.focus({ preventScroll: true });
     }
-}
+  }
 
   function closeProjectSafe() {
-    if (!modal || !modal.classList.contains('active')) return;
-    modal.classList.remove('active');
-    modal.setAttribute('aria-hidden', 'true');
-    document.body.style.paddingRight = '';
-    document.body.style.overflow = '';
+    if (!modal || !modal.classList.contains("active")) return;
+    modal.classList.remove("active");
+    modal.setAttribute("aria-hidden", "true");
+    document.body.style.paddingRight = "";
+    document.body.style.overflow = "";
     setMainInert(false);
-    if (removeTrap) { removeTrap(); removeTrap = null; }
-    if (modalBody) {
-      modalBody.innerHTML = '';
+    if (removeTrap) {
+      removeTrap();
+      removeTrap = null;
     }
-    if (lastFocusedElement && typeof lastFocusedElement.focus === 'function') {
+    if (modalBody) {
+      modalBody.innerHTML = "";
+    }
+    if (lastFocusedElement && typeof lastFocusedElement.focus === "function") {
       lastFocusedElement.focus({ preventScroll: true });
     }
     lastFocusedElement = null;
   }
 
-  if (modalClose) modalClose.addEventListener('click', closeProjectSafe);
+  if (modalClose) modalClose.addEventListener("click", closeProjectSafe);
   if (modal) {
-    modal.addEventListener('click', function (e) {
+    modal.addEventListener("click", function (e) {
       if (e.target === modal) closeProjectSafe();
     });
   }
-  document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape') closeProjectSafe();
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") closeProjectSafe();
   });
 
   /* ── Expose for inline use ────────────────────────────────── */
@@ -959,151 +1620,181 @@ if (projectContent) {
      WIRE PROJECT CARDS
      ═══════════════════════════════════════════════════════════════ */
   projectCards.forEach(function (card) {
-    var name = card.getAttribute('data-project');
+    var name = card.getAttribute("data-project");
 
     /* ── Favorite Button ──────────────────────────────────── */
-    var favBtn = document.createElement('button');
-    favBtn.className = 'btn-favorite';
-    favBtn.setAttribute('aria-label', 'Toggle favorite');
+    var favBtn = document.createElement("button");
+    favBtn.className = "btn-favorite";
+    favBtn.setAttribute("aria-label", "Toggle favorite");
     favBtn.innerHTML = '<i class="far fa-star"></i>';
 
-    var favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+    var favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
     if (favorites.includes(name)) {
-      favBtn.classList.add('active');
+      favBtn.classList.add("active");
       favBtn.innerHTML = '<i class="fas fa-star"></i>';
     }
 
-    favBtn.addEventListener('click', function (e) {
+    favBtn.addEventListener("click", function (e) {
       e.stopPropagation();
-      var favs = JSON.parse(localStorage.getItem('favorites') || '[]');
+      var favs = JSON.parse(localStorage.getItem("favorites") || "[]");
       var idx = favs.indexOf(name);
       if (idx === -1) {
         favs.push(name);
-        favBtn.classList.add('active');
+        favBtn.classList.add("active");
         favBtn.innerHTML = '<i class="fas fa-star"></i>';
       } else {
         favs.splice(idx, 1);
-        favBtn.classList.remove('active');
+        favBtn.classList.remove("active");
         favBtn.innerHTML = '<i class="far fa-star"></i>';
-        if (currentCategory === 'favorites') {
-          card.style.display = 'none';
+        if (currentCategory === "favorites") {
+          card.style.display = "none";
         }
       }
-      localStorage.setItem('favorites', JSON.stringify(favs));
+      localStorage.setItem("favorites", JSON.stringify(favs));
     });
 
-    var cardActions = card.querySelector('.card-actions');
+    var cardActions = card.querySelector(".card-actions");
     if (cardActions) cardActions.appendChild(favBtn);
 
     /* ── Share Button ─────────────────────────────────────── */
-    var shareBtn = document.createElement('button');
-    shareBtn.className = 'btn-share';
-    shareBtn.setAttribute('aria-label', 'Share ' + name);
-    shareBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>';
-    shareBtn.title = 'Copy shareable link';
+    var shareBtn = document.createElement("button");
+    shareBtn.className = "btn-share";
+    shareBtn.setAttribute("aria-label", "Share " + name);
+    shareBtn.innerHTML =
+      '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>';
+    shareBtn.title = "Copy shareable link";
 
-    shareBtn.addEventListener('click', function (e) {
+    shareBtn.addEventListener("click", function (e) {
       e.stopPropagation();
-      var url = window.location.origin + window.location.pathname + '?project=' + encodeURIComponent(name);
-      navigator.clipboard.writeText(url).then(function () {
-        showToast('Link copied!');
-      }).catch(function () {
-        showToast('Copy this: ' + url);
-      });
+      var url =
+        window.location.origin +
+        window.location.pathname +
+        "?project=" +
+        encodeURIComponent(name);
+      navigator.clipboard
+        .writeText(url)
+        .then(function () {
+          showToast("Link copied!");
+        })
+        .catch(function () {
+          showToast("Copy this: " + url);
+        });
     });
 
     if (cardActions) cardActions.appendChild(shareBtn);
 
     /* ── Play Button ──────────────────────────────────────── */
-    var playBtns = card.querySelectorAll('.btn-play');
+    var playBtns = card.querySelectorAll(".btn-play");
     playBtns.forEach(function (play) {
-      play.setAttribute('aria-label', 'Open ' + name);
-      play.addEventListener('click', function (e) {
+      play.setAttribute("aria-label", "Open " + name);
+      play.addEventListener("click", function (e) {
         e.stopPropagation();
         openProjectSafe(name, play);
       });
     });
 
     /* ── Card Click ───────────────────────────────────────── */
-    card.addEventListener('click', function (e) {
-      if (e.target.closest('.btn-play') || e.target.closest('.btn-favorite') || e.target.closest('.btn-share')) return;
+    card.addEventListener("click", function (e) {
+      if (
+        e.target.closest(".btn-play") ||
+        e.target.closest(".btn-favorite") ||
+        e.target.closest(".btn-share")
+      )
+        return;
       openProjectSafe(name, card);
     });
 
     /* ── Card Mouse Tracking for Border Glow ──────────────── */
     if (!prefersReducedMotion()) {
-      card.addEventListener('mousemove', function (e) {
+      card.addEventListener("mousemove", function (e) {
         var rect = card.getBoundingClientRect();
         var x = ((e.clientX - rect.left) / rect.width) * 100;
         var y = ((e.clientY - rect.top) / rect.height) * 100;
-        card.style.setProperty('--mouse-x', x + '%');
-        card.style.setProperty('--mouse-y', y + '%');
+        card.style.setProperty("--mouse-x", x + "%");
+        card.style.setProperty("--mouse-y", y + "%");
       });
     }
   });
 
   /* ── Toast ─────────────────────────────────────────────────── */
   function showToast(message) {
-    var existing = document.getElementById('shareToast');
+    var existing = document.getElementById("shareToast");
     if (existing) existing.remove();
-    var toast = document.createElement('div');
-    toast.id = 'shareToast';
-    toast.className = 'share-toast';
+    var toast = document.createElement("div");
+    toast.id = "shareToast";
+    toast.className = "share-toast";
     toast.textContent = message;
     document.body.appendChild(toast);
     requestAnimationFrame(function () {
-      toast.classList.add('share-toast--visible');
+      toast.classList.add("share-toast--visible");
     });
     setTimeout(function () {
-      toast.classList.remove('share-toast--visible');
-      setTimeout(function () { toast.remove(); }, 300);
+      toast.classList.remove("share-toast--visible");
+      setTimeout(function () {
+        toast.remove();
+      }, 300);
     }, 2500);
   }
 
   /* ── URL params auto-open ──────────────────────────────────── */
   (function () {
     var params = new URLSearchParams(window.location.search);
-    var projectParam = params.get('project');
+    var projectParam = params.get("project");
     if (projectParam) {
-      var match = projectCards.find(function (c) { return c.getAttribute('data-project') === projectParam; });
+      var match = projectCards.find(function (c) {
+        return c.getAttribute("data-project") === projectParam;
+      });
       if (match) {
         setTimeout(function () {
           openProjectSafe(projectParam, match);
-          match.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          match.scrollIntoView({ behavior: "smooth", block: "center" });
         }, 300);
       }
     }
-    var catParam = params.get('category');
-    var valid = ['all', 'games', 'math', 'utilities', 'playground', 'favorites'];
+    var catParam = params.get("category");
+    var valid = [
+      "all",
+      "games",
+      "math",
+      "utilities",
+      "playground",
+      "favorites",
+    ];
     if (catParam && valid.includes(catParam)) {
       var tab = document.querySelector('[data-category="' + catParam + '"]');
-      if (tab) setTimeout(function () { tab.click(); }, 100);
+      if (tab)
+        setTimeout(function () {
+          tab.click();
+        }, 100);
     }
   })();
 
   /* ═══════════════════════════════════════════════════════════════
      TIMELINE SCROLL REVEAL
      ═══════════════════════════════════════════════════════════════ */
-  var timelineItems = document.querySelectorAll('.timeline-item[data-reveal]');
-  var timelineFill = document.getElementById('timelineFill');
-  var timelineSection = document.getElementById('timelineSection');
+  var timelineItems = document.querySelectorAll(".timeline-item[data-reveal]");
+  var timelineFill = document.getElementById("timelineFill");
+  var timelineSection = document.getElementById("timelineSection");
 
   if (timelineItems.length && !prefersReducedMotion()) {
-    var timelineObserver = new IntersectionObserver(function (entries) {
-      entries.forEach(function (entry) {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('visible');
-        }
-      });
-    }, { threshold: 0.25, rootMargin: '0px 0px -50px 0px' });
+    var timelineObserver = new IntersectionObserver(
+      function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("visible");
+          }
+        });
+      },
+      { threshold: 0.25, rootMargin: "0px 0px -50px 0px" }
+    );
 
     timelineItems.forEach(function (item) {
       timelineObserver.observe(item);
     });
 
     /* ── Serpentine SVG Winding Timeline Path ─────────────────── */
-    var svgNamespace = 'http://www.w3.org/2000/svg';
-    
+    var svgNamespace = "http://www.w3.org/2000/svg";
+
     function getElementOffset(el, parent) {
       var top = 0;
       var left = 0;
@@ -1117,71 +1808,71 @@ if (projectContent) {
     }
 
     function rebuildTimelineSvg() {
-      var container = document.querySelector('.timeline-container');
+      var container = document.querySelector(".timeline-container");
       if (!container) return;
-      var dots = document.querySelectorAll('.timeline-dot');
+      var dots = document.querySelectorAll(".timeline-dot");
       if (dots.length < 2) return;
 
       var containerWidth = container.offsetWidth;
       var containerHeight = container.offsetHeight;
 
-      var svg = document.getElementById('timelineSvg');
+      var svg = document.getElementById("timelineSvg");
       if (!svg) {
-        svg = document.createElementNS(svgNamespace, 'svg');
-        svg.id = 'timelineSvg';
-        svg.setAttribute('class', 'timeline-svg');
-        
-        var defs = document.createElementNS(svgNamespace, 'defs');
-        var grad = document.createElementNS(svgNamespace, 'linearGradient');
-        grad.id = 'timelineGrad';
-        grad.setAttribute('x1', '0%');
-        grad.setAttribute('y1', '0%');
-        grad.setAttribute('x2', '0%');
-        grad.setAttribute('y2', '100%');
+        svg = document.createElementNS(svgNamespace, "svg");
+        svg.id = "timelineSvg";
+        svg.setAttribute("class", "timeline-svg");
 
-        var stop1 = document.createElementNS(svgNamespace, 'stop');
-        stop1.setAttribute('offset', '0%');
-        stop1.setAttribute('stop-color', 'var(--accent)');
+        var defs = document.createElementNS(svgNamespace, "defs");
+        var grad = document.createElementNS(svgNamespace, "linearGradient");
+        grad.id = "timelineGrad";
+        grad.setAttribute("x1", "0%");
+        grad.setAttribute("y1", "0%");
+        grad.setAttribute("x2", "0%");
+        grad.setAttribute("y2", "100%");
 
-        var stop2 = document.createElementNS(svgNamespace, 'stop');
-        stop2.setAttribute('offset', '100%');
-        stop2.setAttribute('stop-color', '#06b6d4');
+        var stop1 = document.createElementNS(svgNamespace, "stop");
+        stop1.setAttribute("offset", "0%");
+        stop1.setAttribute("stop-color", "var(--accent)");
+
+        var stop2 = document.createElementNS(svgNamespace, "stop");
+        stop2.setAttribute("offset", "100%");
+        stop2.setAttribute("stop-color", "#06b6d4");
 
         grad.appendChild(stop1);
         grad.appendChild(stop2);
         defs.appendChild(grad);
 
         // Define a dynamic layout mask path for progress crawling
-        var mask = document.createElementNS(svgNamespace, 'mask');
-        mask.id = 'timelineMask';
+        var mask = document.createElementNS(svgNamespace, "mask");
+        mask.id = "timelineMask";
 
-        var maskPath = document.createElementNS(svgNamespace, 'path');
-        maskPath.id = 'timelineMaskPath';
-        maskPath.setAttribute('fill', 'none');
-        maskPath.setAttribute('stroke', '#ffffff');
-        maskPath.setAttribute('stroke-width', '24'); // Wide enough to fully cover glowing dots
-        maskPath.setAttribute('stroke-linecap', 'round');
+        var maskPath = document.createElementNS(svgNamespace, "path");
+        maskPath.id = "timelineMaskPath";
+        maskPath.setAttribute("fill", "none");
+        maskPath.setAttribute("stroke", "#ffffff");
+        maskPath.setAttribute("stroke-width", "24"); // Wide enough to fully cover glowing dots
+        maskPath.setAttribute("stroke-linecap", "round");
 
         mask.appendChild(maskPath);
         defs.appendChild(mask);
         svg.appendChild(defs);
 
-        var track = document.createElementNS(svgNamespace, 'path');
-        track.id = 'timelineSvgTrack';
-        track.setAttribute('class', 'timeline-svg-track');
-        track.setAttribute('fill', 'none');
+        var track = document.createElementNS(svgNamespace, "path");
+        track.id = "timelineSvgTrack";
+        track.setAttribute("class", "timeline-svg-track");
+        track.setAttribute("fill", "none");
 
-        var fill = document.createElementNS(svgNamespace, 'path');
-        fill.id = 'timelineSvgFill';
-        fill.setAttribute('class', 'timeline-svg-fill');
-        fill.setAttribute('fill', 'none');
-        fill.setAttribute('stroke', 'var(--accent)');
-        fill.setAttribute('mask', 'url(#timelineMask)');
+        var fill = document.createElementNS(svgNamespace, "path");
+        fill.id = "timelineSvgFill";
+        fill.setAttribute("class", "timeline-svg-fill");
+        fill.setAttribute("fill", "none");
+        fill.setAttribute("stroke", "var(--accent)");
+        fill.setAttribute("mask", "url(#timelineMask)");
 
         svg.appendChild(track);
         svg.appendChild(fill);
 
-        var grid = document.querySelector('.timeline-grid');
+        var grid = document.querySelector(".timeline-grid");
         container.insertBefore(svg, grid);
       }
 
@@ -1209,33 +1900,45 @@ if (projectContent) {
         var pEnd = coords[i + 1];
         var H = pEnd.y - pStart.y;
         var dy = H * 0.35; // Symmetrical control point height
-        
+
         // Even segments (0, 2, 4...) snake to the right, odd segments to the left
-        var dx = (i % 2 === 0) ? W : -W;
+        var dx = i % 2 === 0 ? W : -W;
 
         var cp1x = pStart.x + dx;
         var cp1y = pStart.y + dy;
         var cp2x = pEnd.x + dx;
         var cp2y = pEnd.y - dy;
 
-        d += " C " + cp1x + " " + cp1y + ", " + cp2x + " " + cp2y + ", " + pEnd.x + " " + pEnd.y;
+        d +=
+          " C " +
+          cp1x +
+          " " +
+          cp1y +
+          ", " +
+          cp2x +
+          " " +
+          cp2y +
+          ", " +
+          pEnd.x +
+          " " +
+          pEnd.y;
       }
 
       // Straight exit to the bottom
       d += " L " + coords[coords.length - 1].x + " " + containerHeight;
 
-      var trackPath = document.getElementById('timelineSvgTrack');
-      var fillPath = document.getElementById('timelineSvgFill');
-      var maskPath = document.getElementById('timelineMaskPath');
+      var trackPath = document.getElementById("timelineSvgTrack");
+      var fillPath = document.getElementById("timelineSvgFill");
+      var maskPath = document.getElementById("timelineMaskPath");
       if (trackPath && fillPath && maskPath) {
-        trackPath.setAttribute('d', d);
-        fillPath.setAttribute('d', d);
-        maskPath.setAttribute('d', d);
+        trackPath.setAttribute("d", d);
+        fillPath.setAttribute("d", d);
+        maskPath.setAttribute("d", d);
 
         var totalLength = maskPath.getTotalLength();
         maskPath.style.strokeDasharray = totalLength;
         maskPath.dataset.totalLength = totalLength;
-        
+
         // Trigger scroll progress sync immediately
         updateTimelineFill();
       }
@@ -1244,7 +1947,7 @@ if (projectContent) {
     /* ── Timeline Fill Progress ───────────────────────────── */
     function updateTimelineFill() {
       if (!timelineSection) return;
-      var container = document.querySelector('.timeline-container');
+      var container = document.querySelector(".timeline-container");
       if (!container) return;
 
       var containerRect = container.getBoundingClientRect();
@@ -1255,21 +1958,24 @@ if (projectContent) {
       var offset = Math.max(0, Math.min(1, relativeY / containerRect.height));
 
       /* ── Dynamic SVG path mask scroll synchronization ──────── */
-      var maskPath = document.getElementById('timelineMaskPath');
+      var maskPath = document.getElementById("timelineMaskPath");
       if (maskPath && maskPath.dataset.totalLength) {
         var totalLength = parseFloat(maskPath.dataset.totalLength);
-        var dashoffset = totalLength - (offset * totalLength);
-        maskPath.style.strokeDashoffset = Math.max(0, Math.min(totalLength, dashoffset));
+        var dashoffset = totalLength - offset * totalLength;
+        maskPath.style.strokeDashoffset = Math.max(
+          0,
+          Math.min(totalLength, dashoffset)
+        );
       }
 
       /* ── Activate item based on viewport center crossing timeline dots ── */
       var activeIdx = -1;
-      var dots = document.querySelectorAll('.timeline-dot');
-      
+      var dots = document.querySelectorAll(".timeline-dot");
+
       dots.forEach(function (dot, i) {
         var dotRect = dot.getBoundingClientRect();
         var dotCenterY = dotRect.top + dotRect.height / 2;
-        
+
         // A dot is crossed/passed if its vertical center in the viewport is <= the viewport center
         if (dotCenterY <= viewportCenterY) {
           activeIdx = i;
@@ -1277,41 +1983,74 @@ if (projectContent) {
       });
 
       timelineItems.forEach(function (item, i) {
-        item.classList.toggle('active', i === activeIdx);
+        item.classList.toggle("active", i === activeIdx);
       });
     }
 
     // Initialize SVG path layout recalculations on page render & resize
     rebuildTimelineSvg();
-    window.addEventListener('resize', debounce(rebuildTimelineSvg, 150));
-    window.addEventListener('scroll', updateTimelineFill, { passive: true });
+    window.addEventListener("resize", debounce(rebuildTimelineSvg, 150));
+    window.addEventListener("scroll", updateTimelineFill, { passive: true });
   } else if (timelineItems.length) {
-    timelineItems.forEach(function (item) { item.classList.add('visible'); });
+    timelineItems.forEach(function (item) {
+      item.classList.add("visible");
+    });
   }
 
   /* ── Reveal on Scroll (general) ────────────────────────────── */
-  var revealItems = document.querySelectorAll('.reveal-on-scroll');
+  var revealItems = document.querySelectorAll(".reveal-on-scroll");
   if (revealItems.length && !prefersReducedMotion()) {
-    var revealObserver = new IntersectionObserver(function (entries, obs) {
-      entries.forEach(function (entry) {
-        if (!entry.isIntersecting) return;
-        entry.target.classList.add('is-visible');
-        obs.unobserve(entry.target);
-      });
-    }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
-    revealItems.forEach(function (item) { revealObserver.observe(item); });
+    var revealObserver = new IntersectionObserver(
+      function (entries, obs) {
+        entries.forEach(function (entry) {
+          if (!entry.isIntersecting) return;
+          entry.target.classList.add("is-visible");
+          obs.unobserve(entry.target);
+        });
+      },
+      { threshold: 0.1, rootMargin: "0px 0px -50px 0px" }
+    );
+    revealItems.forEach(function (item) {
+      revealObserver.observe(item);
+    });
   } else {
-    revealItems.forEach(function (item) { item.classList.add('is-visible'); });
+    revealItems.forEach(function (item) {
+      item.classList.add("is-visible");
+    });
   }
 
   /* ── Footer category links ────────────────────────────────── */
-  document.querySelectorAll('.footer-cat-link').forEach(function (a) {
-    a.addEventListener('click', function (e) {
+  document.querySelectorAll(".footer-cat-link").forEach(function (a) {
+    a.addEventListener("click", function (e) {
       e.preventDefault();
-      var cat = a.getAttribute('data-cat');
-      var tab = document.querySelector('.sidebar-tab[data-category="' + cat + '"]');
+      var cat = a.getAttribute("data-cat");
+      var tab = document.querySelector(
+        '.sidebar-tab[data-category="' + cat + '"]'
+      );
       if (tab) tab.click();
     });
   });
+});
 
+const progressBar = document.getElementById("scrollProgressBar");
+
+let ticking = false;
+
+function updateScrollProgress() {
+  const scrollTop = window.scrollY || document.documentElement.scrollTop;
+  const docHeight =
+    document.documentElement.scrollHeight -
+    document.documentElement.clientHeight;
+
+  const progress = docHeight ? (scrollTop / docHeight) * 100 : 0;
+
+  progressBar.style.width = progress + "%";
+  ticking = false;
+}
+
+window.addEventListener("scroll", () => {
+  if (!ticking) {
+    requestAnimationFrame(updateScrollProgress);
+    ticking = true;
+  }
 });

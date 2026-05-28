@@ -172,7 +172,7 @@ const projectInstructions = {
             "Based on letter cancellation method"
         ]
     },
-    
+
     // MATH PROJECTS
     "calculator": {
         title: "🧮 How to Use Calculator",
@@ -278,7 +278,7 @@ const projectInstructions = {
             "Get instant derivative results"
         ]
     },
-    "progression-recognizer": { 
+    "progression-recognizer": {
         title: "📊 How AP/GP/AGP/HP Recognizer Works",
         steps: [
             "Enter a sequence of numbers",
@@ -290,7 +290,7 @@ const projectInstructions = {
             "HP: Harmonic Progression (reciprocals form AP)"
         ]
     },
-    
+
     // UTILITIES
     "color-palette": {
         title: "🎨 How to Use Color Palette",
@@ -520,13 +520,13 @@ function initBlackjack() {
         "A♦️", "2♦️", "3♦️", "4♦️", "5♦️", "6♦️", "7♦️", "8♦️", "9♦️", "10♦️", "J♦️", "Q♦️", "K♦️",
         "A♣️", "2♣️", "3♣️", "4♣️", "5♣️", "6♣️", "7♣️", "8♣️", "9♣️", "10♣️", "J♣️", "Q♣️", "K♣️"
     ];
-    
+
     let deck = [];
     let playerHand = [];
     let dealerHand = [];
     let playerCards = [];
     let dealerCards = [];
-    
+
     const btnHit = document.getElementById("btnHit");
     const btnStand = document.getElementById("btnStand");
     const btnRestart = document.getElementById("btnRestart");
@@ -579,7 +579,7 @@ function initBlackjack() {
     function updateUI(hideDealerCard = false) {
         playerCardsEl.innerHTML = playerCards.map(card => getCardHTML(card)).join("");
         playerScoreEl.textContent = calculate(playerHand);
-        
+
         if (hideDealerCard && dealerCards.length > 0) {
             dealerCardsEl.innerHTML = getCardHTML(dealerCards[0]) + getCardHTML(null, true);
             dealerScoreEl.textContent = "?";
@@ -593,7 +593,7 @@ function initBlackjack() {
         const card = deck.pop();
         const rankStr = card.slice(0, -2); // Replaces card[:-2]
         const rankVal = checkRank(rankStr);
-        
+
         if (isPlayer) {
             playerCards.push(card);
             playerHand.push(rankVal);
@@ -606,23 +606,23 @@ function initBlackjack() {
     function startGame() {
         deck = [...deckTemplate];
         shuffle(deck);
-        
+
         playerHand = []; dealerHand = [];
         playerCards = []; dealerCards = [];
-        
+
         btnHit.style.display = "inline-block";
         btnStand.style.display = "inline-block";
         btnRestart.style.display = "none";
         messageEl.textContent = "Your Turn! Hit or Stand?";
-        
+
         drawCard(true); // Player
         drawCard(false); // Dealer
         drawCard(true); // Player
         drawCard(false); // Dealer
-        
+
         updateUI(true); // Hide dealer's second card initially
     }
-    
+
     function endGame(msg) {
         messageEl.textContent = msg;
         btnHit.style.display = "none";
@@ -634,7 +634,7 @@ function initBlackjack() {
     btnHit.addEventListener("click", () => {
         drawCard(true);
         updateUI(true);
-        
+
         if (calculate(playerHand) > 21) {
             endGame("Bust! You lose!");
         }
@@ -645,10 +645,10 @@ function initBlackjack() {
         while (calculate(dealerHand) < 17) {
             drawCard(false);
         }
-        
+
         const pCount = calculate(playerHand);
         const dCount = calculate(dealerHand);
-        
+
         if (dCount > 21) {
             endGame("Dealer Bust! You win!");
         } else if (pCount === dCount) {
@@ -659,7 +659,7 @@ function initBlackjack() {
             endGame("Dealer wins!");
         }
     });
-    
+
     btnRestart.addEventListener("click", startGame);
 
     // Initialize first game automatically
@@ -761,19 +761,19 @@ function initNumberGuessing() {
     let attempts = 0;
     let minRange = 1;
     let maxRange = 100;
-    
+
     const guessInput = document.getElementById('guessInput');
     const submitBtn = document.getElementById('submitGuess');
     const feedback = document.getElementById('feedback');
     const attemptsDisplay = document.getElementById('attempts');
     const rangeDisplay = document.getElementById('range');
     const resetBtn = document.getElementById('resetGuessing');
-    
+
     submitBtn.addEventListener('click', makeGuess);
     guessInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') makeGuess();
     });
-    
+
     resetBtn.addEventListener('click', () => {
         secretNumber = Math.floor(Math.random() * 100) + 1;
         attempts = 0;
@@ -786,19 +786,19 @@ function initNumberGuessing() {
         guessInput.disabled = false;
         submitBtn.disabled = false;
     });
-    
+
     function makeGuess() {
         const guess = parseInt(guessInput.value);
-        
+
         if (isNaN(guess) || guess < 1 || guess > 100) {
             feedback.textContent = '⚠️ Please enter a number between 1 and 100!';
             feedback.style.color = 'var(--warning-color)';
             return;
         }
-        
+
         attempts++;
         attemptsDisplay.textContent = attempts;
-        
+
         if (guess === secretNumber) {
             feedback.textContent = `🎉 Congratulations! You found it in ${attempts} attempts!`;
             feedback.style.color = 'var(--success-color)';
@@ -813,7 +813,7 @@ function initNumberGuessing() {
             feedback.style.color = 'var(--danger-color)';
             maxRange = Math.min(maxRange, guess - 1);
         }
-        
+
         rangeDisplay.textContent = `${minRange}-${maxRange}`;
         guessInput.value = '';
     }
@@ -836,7 +836,7 @@ function initFibonacci() {
     const display = document.getElementById('fibDisplay');
     const canvas = document.getElementById('fibSpiral');
     const ctx = canvas.getContext('2d');
-    
+
     function generateFibonacci() {
         const value = termsInput.value.trim();
         const n = parseInt(value);
@@ -854,7 +854,7 @@ function initFibonacci() {
         }
 
         display.innerHTML = '';
-    
+
         let fib = [0, 1];
         for (let i = 2; i < n; i++) {
             fib[i] = fib[i - 1] + fib[i - 2];
@@ -870,393 +870,58 @@ function initFibonacci() {
 
         drawSpiral(fib.slice(0, Math.min(n, 12)));
     }
-    
+
     function drawSpiral(fib) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.lineWidth = 3;
-        
+
         const scale = 5;
         let x = 300, y = 300;
         let direction = 0; // 0: right, 1: up, 2: left, 3: down
-        
+
         const colors = ['#6366f1', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#06b6d4'];
-        
+
         fib.forEach((num, i) => {
             const size = num * scale;
             ctx.strokeStyle = colors[i % colors.length];
             ctx.fillStyle = colors[i % colors.length] + '20';
-            
+
             // Draw square
             ctx.fillRect(x, y, size, size);
             ctx.strokeRect(x, y, size, size);
-            
+
             // Draw arc
             ctx.beginPath();
             const arcX = direction === 0 ? x + size : direction === 2 ? x : x;
             const arcY = direction === 1 ? y : direction === 3 ? y + size : y;
-            
-            ctx.arc(arcX, arcY, size, 
-                Math.PI * direction / 2, 
+
+            ctx.arc(arcX, arcY, size,
+                Math.PI * direction / 2,
                 Math.PI * (direction + 1) / 2);
             ctx.stroke();
-            
+
             // Update position for next square
-            switch(direction) {
-                case 0: y -= fib[i+1] * scale; break;
+            switch (direction) {
+                case 0: y -= fib[i + 1] * scale; break;
                 case 1: x -= size; break;
-                case 2: y -= size; x -= fib[i+1] * scale; break;
+                case 2: y -= size; x -= fib[i + 1] * scale; break;
                 case 3: x += size; break;
             }
-            
+
             direction = (direction + 1) % 4;
         });
     }
-    
+
     generateBtn.addEventListener('click', generateFibonacci);
     generateFibonacci();
 }
 
 // Add placeholder functions for remaining projects
+
 // ============================================
 // FLAMES GAME
 // ============================================
-function getFlamesHTML() {
-    return `
-        <div class="project-content">
-            <h2>💖 FLAMES Game</h2>
-            <p class="project-desc">Discover your relationship status!</p>
-            <div class="flames-container">
-                <div class="flames-legend">
-                    <div class="legend-item">F - Friends</div>
-                    <div class="legend-item">L - Love</div>
-                    <div class="legend-item">A - Affection</div>
-                    <div class="legend-item">M - Marriage</div>
-                    <div class="legend-item">E - Enemies</div>
-                    <div class="legend-item">S - Siblings</div>
-                </div>
-                
-                <div class="names-input">
-                    <input type="text" id="name1" placeholder="Enter first name" maxlength="20">
-                    <div class="heart-icon">💕</div>
-                    <input type="text" id="name2" placeholder="Enter second name" maxlength="20">
-                </div>
-                
-                <button class="btn-calculate" id="calculateFlames">💖 Calculate</button>
-                
-                <div class="flames-result" id="flamesResult"></div>
-            </div>
-        </div>
-        
-        <style>
-            .flames-container {
-                padding: 2rem;
-                max-width: 700px;
-                margin: 0 auto;
-                text-align: center;
-            }
-            
-            .flames-legend {
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-                gap: 1rem;
-                margin-bottom: 2rem;
-            }
-            
-            .legend-item {
-                background: var(--surface-color);
-                padding: 0.75rem;
-                border-radius: 10px;
-                border: 2px solid var(--border-color);
-                font-weight: 600;
-            }
-            
-            .names-input {
-                display: flex;
-                gap: 1rem;
-                align-items: center;
-                justify-content: center;
-                margin-bottom: 2rem;
-                flex-wrap: wrap;
-            }
-            
-            .names-input input {
-                flex: 1;
-                min-width: 200px;
-                max-width: 250px;
-                padding: 1rem;
-                font-size: 1.1rem;
-                border: 2px solid var(--border-color);
-                border-radius: 10px;
-                background: var(--bg-color);
-                color: var(--text-color);
-                text-align: center;
-            }
-            
-            .heart-icon {
-                font-size: 2rem;
-                animation: heartbeat 1.5s infinite;
-            }
-            
-            .btn-calculate {
-                background: linear-gradient(135deg, #ec4899, #f43f5e);
-                color: white;
-                border: none;
-                padding: 1rem 3rem;
-                border-radius: 50px;
-                font-size: 1.2rem;
-                cursor: pointer;
-                transition: var(--transition);
-            }
-            
-            .btn-calculate:hover {
-                transform: scale(1.05);
-                box-shadow: 0 5px 20px rgba(236, 72, 153, 0.4);
-            }
-            
-            .flames-result {
-                margin-top: 3rem;
-                min-height: 200px;
-            }
-            
-            .result-card {
-                background: linear-gradient(135deg, #ec4899, #f43f5e);
-                color: white;
-                padding: 3rem;
-                border-radius: 20px;
-                animation: zoomIn 0.5s ease;
-            }
-            
-            .result-names {
-                font-size: 1.5rem;
-                margin-bottom: 1rem;
-                font-weight: 600;
-            }
-            
-            .result-relationship {
-                font-size: 3rem;
-                margin: 2rem 0;
-                font-weight: bold;
-                text-shadow: 2px 2px 10px rgba(0,0,0,0.3);
-            }
-            
-            .result-emoji {
-                font-size: 4rem;
-                margin-bottom: 1rem;
-                animation: bounce 1s infinite;
-            }
-            
-            .result-details {
-                margin-top: 2rem;
-                padding-top: 2rem;
-                border-top: 2px solid rgba(255,255,255,0.3);
-                font-size: 1.1rem;
-            }
-            
-            @keyframes heartbeat {
-                0%, 100% { transform: scale(1); }
-                50% { transform: scale(1.2); }
-            }
-            
-            @keyframes zoomIn {
-                from {
-                    opacity: 0;
-                    transform: scale(0.5);
-                }
-                to {
-                    opacity: 1;
-                    transform: scale(1);
-                }
-            }
-        </style>
-    `;
-}
-
-function initFlames() {
-    const name1Input = document.getElementById('name1');
-    const name2Input = document.getElementById('name2');
-    const calculateBtn = document.getElementById('calculateFlames');
-    const resultDiv = document.getElementById('flamesResult');
-    
-    const relationshipData = {
-        'F': { name: 'Friends', emoji: '👫', message: 'You two are best friends forever!' },
-        'L': { name: 'Love', emoji: '❤️', message: 'True love is in the air!' },
-        'A': { name: 'Affection', emoji: '🥰', message: 'Sweet affection between you!' },
-        'M': { name: 'Marriage', emoji: '💍', message: 'Wedding bells are ringing!' },
-        'E': { name: 'Enemies', emoji: '😠', message: 'Maybe not the best match...' },
-        'S': { name: 'Siblings', emoji: '👨‍👩‍👧', message: 'Like brother and sister!' }
-    };
-    
-    function calculateFlames() {
-        const name1 = name1Input.value.toLowerCase().replace(/\s/g, '');
-        const name2 = name2Input.value.toLowerCase().replace(/\s/g, '');
-        
-        if (!name1 || !name2) {
-            resultDiv.innerHTML = '<p style="color: var(--danger-color);">⚠️ Please enter both names!</p>';
-            return;
-        }
-        
-        const originalName1 = name1Input.value.trim();
-        const originalName2 = name2Input.value.trim();
-        
-        // Convert to arrays
-        let name1List = name1.split('');
-        let name2List = name2.split('');
-        
-        // Remove common characters
-        const name1Copy = [...name1List];
-        for (let char of name1Copy) {
-            const index2 = name2List.indexOf(char);
-            if (index2 !== -1) {
-                name1List.splice(name1List.indexOf(char), 1);
-                name2List.splice(index2, 1);
-            }
-        }
-        
-        const count = name1List.length + name2List.length;
-        
-        // Calculate FLAMES
-        const flames = ['F', 'L', 'A', 'M', 'E', 'S'];
-        let index = 0;
-        
-        while (flames.length > 1) {
-            index = (index + count - 1) % flames.length;
-            flames.splice(index, 1);
-            if (index === flames.length && flames.length > 0) {
-                index = 0;
-            }
-        }
-        
-        const result = flames[0];
-        const relationship = relationshipData[result];
-        
-        // Display result with animation
-        resultDiv.innerHTML = `
-            <div class="result-card">
-                <div class="result-emoji">${relationship.emoji}</div>
-                <div class="result-names">${originalName1} & ${originalName2}</div>
-                <div class="result-relationship">${relationship.name}</div>
-                <div class="result-details">
-                    <div>${relationship.message}</div>
-                    <div style="margin-top: 1rem; font-size: 0.9rem; opacity: 0.9;">
-                        Remaining letters: ${count}
-                    </div>
-                </div>
-            </div>
-        `;
-    }
-
-    
-    function showSequence() {
-        isPlayingSequence = true;
-        disableButtons(true);
-        displayContent.textContent = "Watch the sequence...";
-        
-        let i = 0;
-        const playNextEmoji = () => {
-            if (i < sequence.length) {
-                const emoji = sequence[i];
-                const button = Array.from(emojiButtons).find(btn => btn.dataset.emoji === emoji);
-                
-                if (button) {
-                    button.classList.add('active');
-                    setTimeout(() => {
-                        button.classList.remove('active');
-                        i++;
-                        setTimeout(playNextEmoji, 500);
-                    }, 600);
-                }
-            } else {
-                isPlayingSequence = false;
-                disableButtons(false);
-                userSequence = [];
-                gameActive = true;
-                displayContent.textContent = "Your turn! Click the emojis...";
-                instructionsDiv.textContent = `👆 Repeat the sequence (${sequence.length} steps)`;
-            }
-        };
-        
-        playNextEmoji();
-    }
-    
-    function startNewRound() {
-        const newEmoji = emojis[Math.floor(Math.random() * emojis.length)];
-        sequence.push(newEmoji);
-        userSequence = [];
-        
-        sequenceLengthDisplay.textContent = sequence.length;
-        setTimeout(showSequence, 500);
-    }
-    
-    function handleEmojiClick(emoji, button) {
-        if (isPlayingSequence || !gameActive) return;
-        
-        userSequence.push(emoji);
-        button.classList.add('active');
-        
-        setTimeout(() => {
-            button.classList.remove('active');
-        }, 300);
-        
-        // Check if the emoji matches
-        if (userSequence[userSequence.length - 1] !== sequence[userSequence.length - 1]) {
-            gameOver();
-            return;
-        }
-        
-        // Check if the entire sequence is correct
-        if (userSequence.length === sequence.length) {
-            score += level * 10;
-            scoreDisplay.textContent = score;
-            level++;
-            levelDisplay.textContent = level;
-            
-            instructionsDiv.textContent = "✅ Correct! Get ready for the next round...";
-            gameActive = false;
-            setTimeout(startNewRound, 1500);
-        }
-    }
-    
-    function gameOver() {
-        gameActive = false;
-        disableButtons(true);
-        instructionsDiv.textContent = `❌ Game Over! You reached Level ${level} with Score: ${score}`;
-        displayContent.textContent = `Final Score: ${score}`;
-        startBtn.textContent = "▶️ PLAY AGAIN";
-    }
-    
-    function resetGame() {
-        sequence = [];
-        userSequence = [];
-        score = 0;
-        level = 1;
-        gameActive = false;
-        isPlayingSequence = false;
-        
-        scoreDisplay.textContent = '0';
-        levelDisplay.textContent = '1';
-        sequenceLengthDisplay.textContent = '0';
-        instructionsDiv.textContent = "👇 Click START to begin the game!";
-        displayContent.textContent = "Ready to test your memory?";
-        startBtn.textContent = "▶️ START";
-        
-        disableButtons(true);
-    }
-    
-    startBtn.addEventListener('click', () => {
-        resetGame();
-        gameActive = true;
-        instructionsDiv.textContent = "Watch the sequence...";
-        startNewRound();
-    });
-
-    calculateBtn.addEventListener('click', calculateFlames);
-    name1Input.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') calculateFlames();
-    });
-    name2Input.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') calculateFlames();
-    });
-}
+//Moved to js/projects/flames.js
 
 // ============================================
 // COLLATZ CONJECTURE
@@ -1409,22 +1074,22 @@ function initCollatz() {
     const sequenceDiv = document.getElementById('sequenceDisplay');
     const canvas = document.getElementById('collatzGraph');
     const ctx = canvas.getContext('2d');
-    
+
     function generateSequence() {
         let number = parseInt(numberInput.value);
-        
+
         if (!number || number < 1) {
             sequenceDiv.innerHTML = '<p style="color: var(--danger-color);">⚠️ Please enter a positive integer!</p>';
             statsDiv.innerHTML = '';
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             return;
         }
-        
+
         const originalNumber = number;
         const sequence = [number];
         const maxSteps = 20000;
         let steps = 0;
-        
+
         // Generate sequence with a safety limit
         while (number !== 1 && steps < maxSteps) {
             if (number % 2 === 0) {
@@ -1437,11 +1102,11 @@ function initCollatz() {
         }
 
         const reachedOne = number === 1;
-        
+
         // Display stats
         const maxNum = Math.max(...sequence);
         const statusText = reachedOne ? 'Reached 1 ✅' : `Not reached in ${maxSteps} steps ❌`;
-        
+
         statsDiv.innerHTML = `
             <div class="stat-box">
                 <div class="stat-label">Starting Number</div>
@@ -1460,7 +1125,7 @@ function initCollatz() {
                 <div class="stat-value">${maxNum}</div>
             </div>
         `;
-        
+
         // Display sequence
         sequenceDiv.innerHTML = reachedOne
             ? '<p style="margin-bottom: 1rem; color: var(--success-color); font-weight: 600;">✅ This number reaches 1.</p>'
@@ -1471,7 +1136,7 @@ function initCollatz() {
             numEl.textContent = num;
             numEl.style.animationDelay = `${index * 0.02}s`;
             sequenceDiv.appendChild(numEl);
-            
+
             if (index < sequence.length - 1) {
                 const arrow = document.createElement('span');
                 arrow.className = 'sequence-arrow';
@@ -1479,24 +1144,24 @@ function initCollatz() {
                 sequenceDiv.appendChild(arrow);
             }
         });
-        
+
         // Draw graph for the generated sequence
         drawGraph(sequence);
     }
-    
+
     function drawGraph(sequence) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
+
         if (sequence.length === 0) return;
-        
+
         const padding = 40;
         const graphWidth = canvas.width - 2 * padding;
         const graphHeight = canvas.height - 2 * padding;
-        
+
         const maxValue = Math.max(...sequence);
         const xStep = graphWidth / (sequence.length - 1);
         const yScale = graphHeight / maxValue;
-        
+
         // Draw axes
         ctx.strokeStyle = '#64748b';
         ctx.lineWidth = 2;
@@ -1505,7 +1170,7 @@ function initCollatz() {
         ctx.lineTo(padding, canvas.height - padding);
         ctx.lineTo(canvas.width - padding, canvas.height - padding);
         ctx.stroke();
-        
+
         // Draw grid lines
         ctx.strokeStyle = 'rgba(100, 116, 139, 0.2)';
         ctx.lineWidth = 1;
@@ -1516,18 +1181,18 @@ function initCollatz() {
             ctx.lineTo(canvas.width - padding, y);
             ctx.stroke();
         }
-        
+
         // Draw line
         ctx.strokeStyle = '#6366f1';
         ctx.lineWidth = 3;
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
-        
+
         ctx.beginPath();
         sequence.forEach((value, index) => {
             const x = padding + index * xStep;
             const y = canvas.height - padding - value * yScale;
-            
+
             if (index === 0) {
                 ctx.moveTo(x, y);
             } else {
@@ -1535,36 +1200,36 @@ function initCollatz() {
             }
         });
         ctx.stroke();
-        
+
         // Draw points
         ctx.fillStyle = '#8b5cf6';
         sequence.forEach((value, index) => {
             const x = padding + index * xStep;
             const y = canvas.height - padding - value * yScale;
-            
+
             ctx.beginPath();
             ctx.arc(x, y, 4, 0, Math.PI * 2);
             ctx.fill();
         });
-        
+
         // Draw labels
         ctx.fillStyle = '#94a3b8';
         ctx.font = '12px Arial';
         ctx.textAlign = 'center';
         ctx.fillText('Steps →', canvas.width / 2, canvas.height - 10);
-        
+
         ctx.save();
         ctx.translate(15, canvas.height / 2);
         ctx.rotate(-Math.PI / 2);
         ctx.fillText('Value', 0, 0);
         ctx.restore();
     }
-    
+
     generateBtn.addEventListener('click', generateSequence);
     numberInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') generateSequence();
     });
-    
+
     // Generate initial sequence
     generateSequence();
 }
@@ -1819,9 +1484,9 @@ function initArmstrong() {
                     </div>
                     <div class="step">
                         ${isArmstrong
-                            ? `<span style="color: var(--success-color);">✓ ${sum} = ${num}</span>`
-                            : `<span style="color: var(--danger-color);">✗ ${sum} ≠ ${num}</span>`
-                        }
+                ? `<span style="color: var(--success-color);">✓ ${sum} = ${num}</span>`
+                : `<span style="color: var(--danger-color);">✗ ${sum} ≠ ${num}</span>`
+            }
                     </div>
                 </div>
             </div>
@@ -2074,23 +1739,23 @@ function initHangman() {
     const keyboard = document.getElementById('keyboard');
     const gameMessage = document.getElementById('gameMessage');
     const newGameBtn = document.getElementById('newGameBtn');
-    
-    const words = ['python', 'programming', 'computer', 'algorithm', 'keyboard', 
-                   'monitor', 'software', 'hardware', 'database', 'network',
-                   'internet', 'developer', 'variable', 'function', 'application'];
-    
+
+    const words = ['python', 'programming', 'computer', 'algorithm', 'keyboard',
+        'monitor', 'software', 'hardware', 'database', 'network',
+        'internet', 'developer', 'variable', 'function', 'application'];
+
     let currentWord = '';
     let guessedLetters = [];
     let correctLetters = [];
     let wrongAttempts = 0;
     const maxAttempts = 6;
     let gameOver = false;
-    
+
     // Create keyboard
     function createKeyboard() {
         keyboard.innerHTML = '';
         const letters = 'abcdefghijklmnopqrstuvwxyz'.split('');
-        
+
         letters.forEach(letter => {
             const btn = document.createElement('button');
             btn.className = 'key-btn';
@@ -2100,14 +1765,14 @@ function initHangman() {
             keyboard.appendChild(btn);
         });
     }
-    
+
     // Draw hangman parts
     function drawHangman(stage) {
         ctx.strokeStyle = '#64748b';
         ctx.lineWidth = 3;
         ctx.lineCap = 'round';
-        
-        switch(stage) {
+
+        switch (stage) {
             case 1: // Base
                 ctx.beginPath();
                 ctx.moveTo(50, 320);
@@ -2181,7 +1846,7 @@ function initHangman() {
                 break;
         }
     }
-    
+
     // Initialize game
     function initGame() {
         currentWord = words[Math.floor(Math.random() * words.length)];
@@ -2189,21 +1854,21 @@ function initHangman() {
         correctLetters = [];
         wrongAttempts = 0;
         gameOver = false;
-        
+
         // Clear canvas
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
+
         // Update UI
         wordLengthEl.textContent = currentWord.length;
         attemptsLeftEl.textContent = maxAttempts;
         guessedList.textContent = 'None';
         gameMessage.textContent = '';
         gameMessage.className = 'game-message';
-        
+
         createKeyboard();
         updateWordDisplay();
     }
-    
+
     // Update word display
     function updateWordDisplay() {
         wordDisplay.innerHTML = '';
@@ -2214,24 +1879,24 @@ function initHangman() {
             wordDisplay.appendChild(letterBox);
         }
     }
-    
+
     // Guess letter
     function guessLetter(letter) {
         if (gameOver || guessedLetters.includes(letter)) return;
-        
+
         guessedLetters.push(letter);
-        
+
         // Update button
         const btn = keyboard.querySelector(`[data-letter="${letter}"]`);
         btn.disabled = true;
-        
+
         if (currentWord.includes(letter)) {
             // Correct guess
             correctLetters.push(letter);
             btn.classList.add('correct');
-            
+
             updateWordDisplay();
-            
+
             // Check win
             if (currentWord.split('').every(l => correctLetters.includes(l))) {
                 gameOver = true;
@@ -2243,13 +1908,13 @@ function initHangman() {
             // Wrong guess
             wrongAttempts++;
             btn.classList.add('wrong');
-            
+
             // Draw hangman part (stages 1-4 are gallows, 5-10 are body parts)
             const drawStage = wrongAttempts + 4;
             drawHangman(drawStage);
-            
+
             attemptsLeftEl.textContent = maxAttempts - wrongAttempts;
-            
+
             // Check lose
             if (wrongAttempts >= maxAttempts) {
                 gameOver = true;
@@ -2268,17 +1933,17 @@ function initHangman() {
                 }
             }
         }
-        
+
         // Update guessed letters list
         guessedList.textContent = guessedLetters.join(', ').toUpperCase();
     }
-    
+
     function disableAllKeys() {
         keyboard.querySelectorAll('.key-btn').forEach(btn => {
             btn.disabled = true;
         });
     }
-    
+
     // Draw initial gallows
     function drawGallows() {
         drawHangman(1); // Base
@@ -2286,12 +1951,12 @@ function initHangman() {
         drawHangman(3); // Top beam
         drawHangman(4); // Rope
     }
-    
+
     newGameBtn.addEventListener('click', () => {
         initGame();
         drawGallows();
     });
-    
+
     // Keyboard support
     document.addEventListener('keypress', (e) => {
         if (gameOver) return;
@@ -2300,7 +1965,7 @@ function initHangman() {
             guessLetter(letter);
         }
     });
-    
+
     // Initialize
     initGame();
     drawGallows();
@@ -2309,7 +1974,7 @@ function initHangman() {
 // Collatz implementation is defined above.
 
 function getPrimeAnalyzerHTML() { return '<h2>🔱 Prime Analyzer - Coming Soon!</h2>'; }
-function initPrimeAnalyzer() {}
+function initPrimeAnalyzer() { }
 
 // ============================================
 // MORSE CODE TRANSLATOR
@@ -2467,12 +2132,12 @@ function initMorseCode() {
         '3': '...--', '4': '....-', '5': '.....', '6': '-....', '7': '--...',
         '8': '---..', '9': '----.', ' ': '/'
     };
-    
+
     const textInput = document.getElementById('textInput');
     const translateBtn = document.getElementById('translateBtn');
     const morseOutput = document.getElementById('morseOutput');
     const morseChart = document.getElementById('morseChart');
-    
+
     // Populate morse chart
     Object.keys(morseCode).forEach(char => {
         if (char !== ' ') {
@@ -2485,7 +2150,7 @@ function initMorseCode() {
             morseChart.appendChild(item);
         }
     });
-    
+
     // Translate function
     function translate() {
         const text = textInput.value.toUpperCase();
@@ -2493,10 +2158,10 @@ function initMorseCode() {
             morseOutput.innerHTML = '<p class="placeholder">Please enter some text to translate!</p>';
             return;
         }
-        
+
         morseOutput.innerHTML = '';
         const words = text.split(' ');
-        
+
         words.forEach((word, wordIndex) => {
             let morseWord = '';
             for (let char of word) {
@@ -2504,7 +2169,7 @@ function initMorseCode() {
                     morseWord += morseCode[char] + ' ';
                 }
             }
-            
+
             if (morseWord.trim()) {
                 const wordEl = document.createElement('div');
                 wordEl.className = 'morse-word';
@@ -2514,7 +2179,7 @@ function initMorseCode() {
             }
         });
     }
-    
+
     translateBtn.addEventListener('click', translate);
     textInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter' && e.ctrlKey) {
@@ -2686,29 +2351,29 @@ function initPrimeAnalyzer() {
     const rangeEnd = document.getElementById('rangeEnd');
     const rangeBtn = document.getElementById('rangeBtn');
     const rangeDisplay = document.getElementById('rangeDisplay');
-    
+
     // Check if number is prime
     function isPrime(num) {
         if (num < 2) return false;
         if (num === 2) return true;
         if (num % 2 === 0) return false;
-        
+
         for (let i = 3; i <= Math.sqrt(num); i += 2) {
             if (num % i === 0) return false;
         }
         return true;
     }
-    
+
     // Check prime
     function checkPrime() {
         const num = parseInt(primeInput.value);
-        
+
         if (isNaN(num)) {
             primeResult.textContent = '⚠️ Please enter a valid number!';
             primeResult.className = 'result-display';
             return;
         }
-        
+
         if (isPrime(num)) {
             primeResult.textContent = `✅ ${num} is a Prime Number!`;
             primeResult.className = 'result-display prime';
@@ -2717,17 +2382,17 @@ function initPrimeAnalyzer() {
             primeResult.className = 'result-display not-prime';
         }
     }
-    
+
     // Generate primes up to limit
     function generatePrimes() {
         const limit = parseInt(generateLimit.value) || 100;
         primesDisplay.innerHTML = '';
-        
+
         const primes = [];
         for (let i = 2; i <= limit; i++) {
             if (isPrime(i)) primes.push(i);
         }
-        
+
         primes.forEach((prime, index) => {
             const el = document.createElement('div');
             el.className = 'prime-number';
@@ -2735,23 +2400,23 @@ function initPrimeAnalyzer() {
             el.style.animationDelay = `${index * 0.02}s`;
             primesDisplay.appendChild(el);
         });
-        
+
         if (primes.length === 0) {
             primesDisplay.innerHTML = '<p style="color: var(--text-secondary);">No primes found in range</p>';
         }
     }
-    
+
     // Find primes in range
     function findPrimesInRange() {
         const start = parseInt(rangeStart.value) || 1;
         const end = parseInt(rangeEnd.value) || 50;
         rangeDisplay.innerHTML = '';
-        
+
         const primes = [];
         for (let i = Math.max(2, start); i <= end; i++) {
             if (isPrime(i)) primes.push(i);
         }
-        
+
         primes.forEach((prime, index) => {
             const el = document.createElement('div');
             el.className = 'prime-number';
@@ -2759,21 +2424,21 @@ function initPrimeAnalyzer() {
             el.style.animationDelay = `${index * 0.02}s`;
             rangeDisplay.appendChild(el);
         });
-        
+
         if (primes.length === 0) {
             rangeDisplay.innerHTML = '<p style="color: var(--text-secondary);">No primes found in range</p>';
         }
     }
-    
+
     // Event listeners
     checkPrimeBtn.addEventListener('click', checkPrime);
     primeInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') checkPrime();
     });
-    
+
     generatePrimesBtn.addEventListener('click', generatePrimes);
     rangeBtn.addEventListener('click', findPrimesInRange);
-    
+
     // Initial generation
     generatePrimes();
 }
@@ -2809,6 +2474,103 @@ function getTowerOfHanoiHTML() {
                 <canvas id="hanoiCanvas" width="800" height="400"></canvas>
             </div>
         </div>
+        
+         <style>
+            .hanoi-container {
+                padding: 2rem;
+                text-align: center;
+            }
+            
+            .controls {
+                display: flex;
+                gap: 1rem;
+                justify-content: center;
+                align-items: center;
+                margin-bottom: 1rem;
+                flex-wrap: wrap;
+            }
+            
+            .controls label {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+            }
+            
+            .controls label input {
+                width: 80px;
+                padding: 0.5rem;
+                font-size: 1rem;
+                border: 2px solid var(--border-color);
+                border-radius: 8px;
+                background: var(--bg-color);
+                color: var(--text-color);
+                text-align: center;
+            }
+            
+            .btn-solve {
+                background: var(--success-color);
+                color: white;
+                border: none;
+                padding: 0.75rem 2rem;
+                border-radius: 50px;
+                cursor: pointer;
+                font-size: 1rem;
+                transition: var(--transition);
+            }
+            
+            .btn-solve:hover:not(:disabled) {
+                transform: scale(1.05);
+            }
+            
+            .btn-solve:disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+            }
+            
+            .btn-reset {
+                background: var(--danger-color);
+                color: white;
+                border: none;
+                padding: 0.75rem 2rem;
+                border-radius: 50px;
+                cursor: pointer;
+                font-size: 1rem;
+                transition: var(--transition);
+            }
+            
+            .btn-reset:hover:not(:disabled) {
+                transform: scale(1.05);
+            }
+            
+            .btn-reset:disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+            }
+            
+            .stats {
+                display: flex;
+                gap: 2rem;
+                justify-content: center;
+                margin-bottom: 2rem;
+                font-size: 1.2rem;
+                font-weight: bold;
+            }
+            
+            .stats span {
+                color: var(--primary-color);
+            }
+            
+            #hanoiCanvas {
+                background: var(--surface-color);
+                border-radius: 15px;
+                box-shadow: var(--shadow);
+                max-width: 100%;
+                height: auto;
+                display: block;
+                margin: 0 auto;
+                cursor: pointer;
+            }
+        </style>
     `;
 }
 
@@ -2837,7 +2599,7 @@ function initTowerOfHanoi() {
     const baseY = 350;
 
     const colors = [
-        '#ef4444',
+        '#EF4444',
         '#f97316',
         '#eab308',
         '#22c55e',
@@ -2869,15 +2631,34 @@ function initTowerOfHanoi() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
         // poles
-        ctx.fillStyle = '#64748b';
+        ctx.fillStyle = '#8B5A2B';
         for (let i = 0; i < 3; i++) {
 
-            ctx.fillRect(towerX[i] - 5, baseY - 200, 10, 200);
+            roundRect(ctx, towerX[i] - 5, baseY - 200, 10, 200, 5);
+            ctx.fill();
 
             ctx.fillRect(towerX[i] - 80, baseY, 160, 10);
         }
 
         // disks
+        function roundRect(ctx, x, y, width, height, radius) {
+            ctx.beginPath();
+            ctx.moveTo(x + radius, y);
+            ctx.lineTo(x + width - radius, y);
+            ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+            ctx.lineTo(x + width, y + height - radius);
+            ctx.quadraticCurveTo(
+                x + width,
+                y + height,
+                x + width - radius,
+                y + height
+            );
+            ctx.lineTo(x + radius, y + height);
+            ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+            ctx.lineTo(x, y + radius);
+            ctx.quadraticCurveTo(x, y, x + radius, y);
+            ctx.closePath();
+        }
         for (let tower = 0; tower < 3; tower++) {
             for (let disk = 0; disk < towers[tower].length; disk++) {
                 const diskSize = towers[tower][disk];
@@ -2894,21 +2675,22 @@ function initTowerOfHanoi() {
 
                 ctx.fillStyle = colors[diskSize - 1];
 
-                ctx.fillRect(
+                ctx.fillStyle = colors[diskSize - 1];
+
+                roundRect(
+                    ctx,
                     x,
                     y,
                     diskWidth,
-                    diskHeight - 2
+                    diskHeight,
+                    8
                 );
+
+                ctx.fill();
 
                 ctx.strokeStyle = '#1e293b';
-
-                ctx.strokeRect(
-                    x,
-                    y,
-                    diskWidth,
-                    diskHeight - 2
-                );
+                ctx.lineWidth = 2;
+                ctx.stroke();
 
                 ctx.fillStyle = 'white';
                 ctx.font = 'bold 12px Arial';
@@ -2989,7 +2771,7 @@ function initTowerOfHanoi() {
 // ============================================
 
 function getTicTacToeHTML() {
-  return `
+    return `
 <div class="ttt-wrap">
 
   <!-- ░░ SETUP SCREEN ░░ -->
@@ -3073,9 +2855,9 @@ function getTicTacToeHTML() {
     <div style="position:relative;">
     <div id="ttt-board">
 
-      ${[0,1,2,3,4,5,6,7,8].map(i =>
-        `<button class="ttt-cell" data-i="${i}" aria-label="Cell ${i+1}"></button>`
-      ).join('')}
+      ${[0, 1, 2, 3, 4, 5, 6, 7, 8].map(i =>
+        `<button class="ttt-cell" data-i="${i}" aria-label="Cell ${i + 1}"></button>`
+    ).join('')}
     </div>
 
     <!-- Win-line SVG overlay -->
@@ -3120,402 +2902,402 @@ function getTicTacToeHTML() {
 }
 function initTicTacToe() {
 
-  // Win combos
-  const WINS = [
-    [0,1,2],[3,4,5],[6,7,8],   // rows
-    [0,3,6],[1,4,7],[2,5,8],   // cols
-    [0,4,8],[2,4,6]            // diagonals
-  ];
+    // Win combos
+    const WINS = [
+        [0, 1, 2], [3, 4, 5], [6, 7, 8],   // rows
+        [0, 3, 6], [1, 4, 7], [2, 5, 8],   // cols
+        [0, 4, 8], [2, 4, 6]            // diagonals
+    ];
 
-  // Win-line centre coordinates (column, row) in 0-2 grid space
-  const WIN_COORDS = [
-    [[0,0],[2,0]], [[0,1],[2,1]], [[0,2],[2,2]],  // rows
-    [[0,0],[0,2]], [[1,0],[1,2]], [[2,0],[2,2]],  // cols
-    [[0,0],[2,2]], [[2,0],[0,2]]                   // diagonals
-  ];
+    // Win-line centre coordinates (column, row) in 0-2 grid space
+    const WIN_COORDS = [
+        [[0, 0], [2, 0]], [[0, 1], [2, 1]], [[0, 2], [2, 2]],  // rows
+        [[0, 0], [0, 2]], [[1, 0], [1, 2]], [[2, 0], [2, 2]],  // cols
+        [[0, 0], [2, 2]], [[2, 0], [0, 2]]                   // diagonals
+    ];
 
-  // ── State ──
-  let mode       = "2p";
-  let difficulty = "easy";
-  let maxRounds  = 3;
-  let p1         = "Player 1";
-  let p2         = "Player 2";
-  let scores     = { p1:0, p2:0, draws:0 };
-  let board      = [];
-  let current    = "X";   // "X" | "O"
-  let round      = 1;
-  let gameOver   = false;
+    // ── State ──
+    let mode = "2p";
+    let difficulty = "easy";
+    let maxRounds = 3;
+    let p1 = "Player 1";
+    let p2 = "Player 2";
+    let scores = { p1: 0, p2: 0, draws: 0 };
+    let board = [];
+    let current = "X";   // "X" | "O"
+    let round = 1;
+    let gameOver = false;
 
-  // ── Helpers ──
-  function qs(sel, ctx) { return (ctx||document).querySelector(sel); }
+    // ── Helpers ──
+    function qs(sel, ctx) { return (ctx || document).querySelector(sel); }
 
-  // Show one of the three screens
-  function showScreen(id) {
-    ["ttt-setup","ttt-game","ttt-final"].forEach(s => {
-      const el = document.getElementById(s);
-      if (el) {
-        el.classList.toggle("ttt-screen--active", s === id);
-      }
-    });
-  }
-
-  // Pill-toggle group helper
-  function initPillGroup(groupId, onChange) {
-    const grp = document.getElementById(groupId);
-    if (!grp) return;
-    grp.querySelectorAll(".ttt-pill").forEach(btn => {
-      btn.addEventListener("click", () => {
-        grp.querySelectorAll(".ttt-pill").forEach(b => b.classList.remove("ttt-pill--on"));
-        btn.classList.add("ttt-pill--on");
-        onChange(btn.dataset.val);
-      });
-    });
-  }
-
-  // ── Wire up Setup ──
-  initPillGroup("ttt-mode-group", val => {
-    mode = val;
-    const diffGroup = document.getElementById("ttt-diff-group");
-    const p2box     = document.getElementById("ttt-p2-box");
-    const p2inp     = document.getElementById("ttt-p2");
-    if (val === "ai") {
-      diffGroup.style.display = "block";
-      p2box.classList.add("ttt-dimmed");
-      p2inp.disabled = true;
-      p2inp.placeholder = "Computer 🤖";
-    } else {
-      diffGroup.style.display = "none";
-      p2box.classList.remove("ttt-dimmed");
-      p2inp.disabled = false;
-      p2inp.placeholder = "Player 2";
-    }
-  });
-
-  initPillGroup("ttt-diff-pills",   val => { difficulty = val; });
-  initPillGroup("ttt-rounds-group", val => { maxRounds = parseInt(val); });
-
-  // Start button
-  const startBtn = document.getElementById("ttt-start");
-  if (startBtn) {
-    startBtn.addEventListener("click", () => {
-      p1 = (document.getElementById("ttt-p1").value.trim()) || "Player 1";
-      p2 = mode === "ai"
-        ? "Computer 🤖"
-        : ((document.getElementById("ttt-p2").value.trim()) || "Player 2");
-      scores = { p1:0, p2:0, draws:0 };
-      round  = 1;
-      newRound();
-      showScreen("ttt-game");
-    });
-  }
-
-  // Back / Menu buttons
-  const backBtn = document.getElementById("ttt-back");
-  if (backBtn) backBtn.addEventListener("click", () => showScreen("ttt-setup"));
-
-  const menuBtn = document.getElementById("ttt-menu");
-  if (menuBtn) menuBtn.addEventListener("click", () => showScreen("ttt-setup"));
-
-  // Rematch button
-  const rematchBtn = document.getElementById("ttt-rematch");
-  if (rematchBtn) {
-    rematchBtn.addEventListener("click", () => {
-      scores = { p1:0, p2:0, draws:0 };
-      round  = 1;
-      newRound();
-      showScreen("ttt-game");
-    });
-  }
-
-  // Next-round button
-  const nextBtn = document.getElementById("ttt-next");
-  if (nextBtn) {
-    nextBtn.addEventListener("click", () => {
-      const majority = Math.ceil(maxRounds / 2);
-      const matchDone = round >= maxRounds
-        || scores.p1 >= majority
-        || scores.p2 >= majority;
-      if (matchDone) {
-        renderFinal();
-        showScreen("ttt-final");
-      } else {
-        round++;
-        newRound();
-      }
-    });
-  }
-
-  // ── Round management ──
-  function newRound() {
-    board    = Array(9).fill(null);
-    current  = "X";
-    gameOver = false;
-
-    // Reset cells
-    document.querySelectorAll(".ttt-cell").forEach(c => {
-      c.textContent = "";
-      c.className   = "ttt-cell";
-      c.disabled    = false;
-    });
-
-    // Hide result overlay
-    const overlay = document.getElementById("ttt-result-overlay");
-    if (overlay) overlay.style.display = "none";
-
-    // Clear win line
-    clearWinLine();
-
-    // Update scoreboard
-    syncScoreboard();
-
-    // Round label
-    const tag = document.getElementById("ttt-round-tag");
-    if (tag) {
-      tag.textContent = maxRounds === 1
-        ? "Single Round"
-        : `Round ${round} of ${maxRounds}`;
+    // Show one of the three screens
+    function showScreen(id) {
+        ["ttt-setup", "ttt-game", "ttt-final"].forEach(s => {
+            const el = document.getElementById(s);
+            if (el) {
+                el.classList.toggle("ttt-screen--active", s === id);
+            }
+        });
     }
 
-    refreshTurnBanner();
-
-    // If AI goes first (not default, but safe to handle)
-    if (mode === "ai" && current === "O") {
-      lockBoard(true);
-      setTimeout(aiTurn, 600);
+    // Pill-toggle group helper
+    function initPillGroup(groupId, onChange) {
+        const grp = document.getElementById(groupId);
+        if (!grp) return;
+        grp.querySelectorAll(".ttt-pill").forEach(btn => {
+            btn.addEventListener("click", () => {
+                grp.querySelectorAll(".ttt-pill").forEach(b => b.classList.remove("ttt-pill--on"));
+                btn.classList.add("ttt-pill--on");
+                onChange(btn.dataset.val);
+            });
+        });
     }
-  }
 
-  function syncScoreboard() {
-    const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
-    set("ttt-sn1", p1);
-    set("ttt-sn2", p2);
-    set("ttt-sv1", scores.p1);
-    set("ttt-sv2", scores.p2);
-    set("ttt-svd", scores.draws);
-  }
-
-  function refreshTurnBanner() {
-    const name = current === "X" ? p1 : p2;
-    const sym  = current === "X" ? "X" : "O";
-    const symEl  = document.getElementById("ttt-turn-sym");
-    const nameEl = document.getElementById("ttt-turn-name");
-    const banner = document.getElementById("ttt-turn-banner");
-    if (symEl)  symEl.textContent  = sym;
-    if (nameEl) nameEl.textContent = name;
-    if (banner) {
-      banner.classList.toggle("ttt-turn-banner--x", current === "X");
-      banner.classList.toggle("ttt-turn-banner--o", current === "O");
-    }
-  }
-
-  // ── Cell clicks ──
-  document.querySelectorAll(".ttt-cell").forEach(cell => {
-    cell.addEventListener("click", () => {
-      const i = parseInt(cell.dataset.i);
-      if (gameOver || board[i]) return;
-      if (mode === "ai" && current === "O") return; // AI's turn
-
-      placeMove(i, current);
-      afterMove();
+    // ── Wire up Setup ──
+    initPillGroup("ttt-mode-group", val => {
+        mode = val;
+        const diffGroup = document.getElementById("ttt-diff-group");
+        const p2box = document.getElementById("ttt-p2-box");
+        const p2inp = document.getElementById("ttt-p2");
+        if (val === "ai") {
+            diffGroup.style.display = "block";
+            p2box.classList.add("ttt-dimmed");
+            p2inp.disabled = true;
+            p2inp.placeholder = "Computer 🤖";
+        } else {
+            diffGroup.style.display = "none";
+            p2box.classList.remove("ttt-dimmed");
+            p2inp.disabled = false;
+            p2inp.placeholder = "Player 2";
+        }
     });
-  });
 
-  function placeMove(i, sym) {
-    board[i] = sym;
-    const cell = document.querySelector(`.ttt-cell[data-i="${i}"]`);
-    if (!cell) return;
-   cell.textContent = sym;
-    cell.classList.add(sym === "X" ? "ttt-cell--x" : "ttt-cell--o");
-    cell.disabled = true;
-  }
+    initPillGroup("ttt-diff-pills", val => { difficulty = val; });
+    initPillGroup("ttt-rounds-group", val => { maxRounds = parseInt(val); });
 
-  function afterMove() {
-    const win = getWinner(board);
-    if (win)              { endRound(win);  return; }
-    if (board.every(c=>c)){ endRound(null); return; }
-
-    current = current === "X" ? "O" : "X";
-    refreshTurnBanner();
-
-    if (mode === "ai" && current === "O") {
-      lockBoard(true);
-      setTimeout(aiTurn, 480 + Math.random()*200);
+    // Start button
+    const startBtn = document.getElementById("ttt-start");
+    if (startBtn) {
+        startBtn.addEventListener("click", () => {
+            p1 = (document.getElementById("ttt-p1").value.trim()) || "Player 1";
+            p2 = mode === "ai"
+                ? "Computer 🤖"
+                : ((document.getElementById("ttt-p2").value.trim()) || "Player 2");
+            scores = { p1: 0, p2: 0, draws: 0 };
+            round = 1;
+            newRound();
+            showScreen("ttt-game");
+        });
     }
-  }
 
-  function lockBoard(on) {
-    document.querySelectorAll(".ttt-cell").forEach(c => {
-      if (!board[parseInt(c.dataset.i)]) c.disabled = on;
+    // Back / Menu buttons
+    const backBtn = document.getElementById("ttt-back");
+    if (backBtn) backBtn.addEventListener("click", () => showScreen("ttt-setup"));
+
+    const menuBtn = document.getElementById("ttt-menu");
+    if (menuBtn) menuBtn.addEventListener("click", () => showScreen("ttt-setup"));
+
+    // Rematch button
+    const rematchBtn = document.getElementById("ttt-rematch");
+    if (rematchBtn) {
+        rematchBtn.addEventListener("click", () => {
+            scores = { p1: 0, p2: 0, draws: 0 };
+            round = 1;
+            newRound();
+            showScreen("ttt-game");
+        });
+    }
+
+    // Next-round button
+    const nextBtn = document.getElementById("ttt-next");
+    if (nextBtn) {
+        nextBtn.addEventListener("click", () => {
+            const majority = Math.ceil(maxRounds / 2);
+            const matchDone = round >= maxRounds
+                || scores.p1 >= majority
+                || scores.p2 >= majority;
+            if (matchDone) {
+                renderFinal();
+                showScreen("ttt-final");
+            } else {
+                round++;
+                newRound();
+            }
+        });
+    }
+
+    // ── Round management ──
+    function newRound() {
+        board = Array(9).fill(null);
+        current = "X";
+        gameOver = false;
+
+        // Reset cells
+        document.querySelectorAll(".ttt-cell").forEach(c => {
+            c.textContent = "";
+            c.className = "ttt-cell";
+            c.disabled = false;
+        });
+
+        // Hide result overlay
+        const overlay = document.getElementById("ttt-result-overlay");
+        if (overlay) overlay.style.display = "none";
+
+        // Clear win line
+        clearWinLine();
+
+        // Update scoreboard
+        syncScoreboard();
+
+        // Round label
+        const tag = document.getElementById("ttt-round-tag");
+        if (tag) {
+            tag.textContent = maxRounds === 1
+                ? "Single Round"
+                : `Round ${round} of ${maxRounds}`;
+        }
+
+        refreshTurnBanner();
+
+        // If AI goes first (not default, but safe to handle)
+        if (mode === "ai" && current === "O") {
+            lockBoard(true);
+            setTimeout(aiTurn, 600);
+        }
+    }
+
+    function syncScoreboard() {
+        const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+        set("ttt-sn1", p1);
+        set("ttt-sn2", p2);
+        set("ttt-sv1", scores.p1);
+        set("ttt-sv2", scores.p2);
+        set("ttt-svd", scores.draws);
+    }
+
+    function refreshTurnBanner() {
+        const name = current === "X" ? p1 : p2;
+        const sym = current === "X" ? "X" : "O";
+        const symEl = document.getElementById("ttt-turn-sym");
+        const nameEl = document.getElementById("ttt-turn-name");
+        const banner = document.getElementById("ttt-turn-banner");
+        if (symEl) symEl.textContent = sym;
+        if (nameEl) nameEl.textContent = name;
+        if (banner) {
+            banner.classList.toggle("ttt-turn-banner--x", current === "X");
+            banner.classList.toggle("ttt-turn-banner--o", current === "O");
+        }
+    }
+
+    // ── Cell clicks ──
+    document.querySelectorAll(".ttt-cell").forEach(cell => {
+        cell.addEventListener("click", () => {
+            const i = parseInt(cell.dataset.i);
+            if (gameOver || board[i]) return;
+            if (mode === "ai" && current === "O") return; // AI's turn
+
+            placeMove(i, current);
+            afterMove();
+        });
     });
-  }
 
-  // ── Win detection ──
-  function getWinner(b) {
-    for (let idx=0; idx<WINS.length; idx++) {
-      const [a,x,c] = WINS[idx];
-      if (b[a] && b[a]===b[x] && b[x]===b[c]) {
-        return { sym: b[a], combo: WINS[idx], coordIdx: idx };
-      }
-    }
-    return null;
-  }
-
-  // ── End of round ──
-  function endRound(win) {
-    gameOver = true;
-    lockBoard(true);
-
-    if (win) {
-      // Highlight winning cells
-      win.combo.forEach(i => {
+    function placeMove(i, sym) {
+        board[i] = sym;
         const cell = document.querySelector(`.ttt-cell[data-i="${i}"]`);
-        if (cell) cell.classList.add("ttt-cell--win");
-      });
-      // Draw SVG win line
-      drawWinLine(win.coordIdx);
-
-      const winnerName = win.sym === "X" ? p1 : p2;
-      if (win.sym === "X") scores.p1++; else scores.p2++;
-      syncScoreboard();
-
-      setResult("🏆", `${winnerName} wins this round!`);
-    } else {
-      scores.draws++;
-      syncScoreboard();
-      setResult("🤝", "It's a draw!");
+        if (!cell) return;
+        cell.textContent = sym;
+        cell.classList.add(sym === "X" ? "ttt-cell--x" : "ttt-cell--o");
+        cell.disabled = true;
     }
 
-    // Update Next button label
-    setTimeout(() => {
-      const majority  = Math.ceil(maxRounds / 2);
-      const matchDone = round >= maxRounds
-        || scores.p1 >= majority
-        || scores.p2 >= majority;
-      const nextBtn = document.getElementById("ttt-next");
-      if (nextBtn) nextBtn.textContent = matchDone ? "See Results →" : "Next Round →";
+    function afterMove() {
+        const win = getWinner(board);
+        if (win) { endRound(win); return; }
+        if (board.every(c => c)) { endRound(null); return; }
 
-      const overlay = document.getElementById("ttt-result-overlay");
-      if (overlay) overlay.style.display = "flex";
-    }, 600);
-  }
+        current = current === "X" ? "O" : "X";
+        refreshTurnBanner();
 
-  function setResult(emoji, text) {
-    const e = document.getElementById("ttt-res-emoji");
-    const t = document.getElementById("ttt-res-text");
-    if (e) e.textContent = emoji;
-    if (t) t.textContent = text;
-  }
-
-  // ── Win-line SVG ──
-  // Grid cells are (col, row) 0-indexed; centre of cell = col+0.5, row+0.5
-  function drawWinLine(comboIdx) {
-  const line = document.getElementById("ttt-win-line");
-  const svg  = document.getElementById("ttt-win-svg");
-  if (!line || !svg) return;
-
-  const [[c1,r1],[c2,r2]] = WIN_COORDS[comboIdx];
-  line.setAttribute("x1", c1 + 0.5);
-  line.setAttribute("y1", r1 + 0.5);
-  line.setAttribute("x2", c2 + 0.5);
-  line.setAttribute("y2", r2 + 0.5);
-  line.setAttribute("opacity", "1");
-  svg.classList.add("ttt-win-svg--visible");
-}
-
-  function clearWinLine() {
-    const line = document.getElementById("ttt-win-line");
-    const svg  = document.getElementById("ttt-win-svg");
-    if (line) line.setAttribute("opacity","0");
-    if (svg)  svg.classList.remove("ttt-win-svg--visible");
-  }
-
-  // ── Final screen ──
-  function renderFinal() {
-    const set = (id,v) => { const el=document.getElementById(id); if(el) el.textContent=v; };
-    set("ttt-fp1",  p1);
-    set("ttt-fp2",  p2);
-    set("ttt-fp1s", scores.p1);
-    set("ttt-fp2s", scores.p2);
-    set("ttt-final-draws", `${scores.draws} draw${scores.draws!==1?"s":""}`);
-
-    let title;
-    if      (scores.p1 > scores.p2) title = `🏆 ${p1} wins the match!`;
-    else if (scores.p2 > scores.p1) title = `🏆 ${p2} wins the match!`;
-    else                             title = "🤝 The match is tied!";
-    set("ttt-final-title", title);
-  }
-
-  // ── AI engines ──
-  function freeCells(b) {
-    return b.reduce((acc,v,i) => { if(!v) acc.push(i); return acc; }, []);
-  }
-
-  function checkWinFor(b, sym) {
-    return WINS.some(([a,x,c]) => b[a]===sym && b[x]===sym && b[c]===sym);
-  }
-
-  function minimax(b, isMax, alpha, beta, depth) {
-    if (checkWinFor(b,"O")) return 10 - depth;
-    if (checkWinFor(b,"X")) return depth - 10;
-    if (b.every(c=>c))      return 0;
-
-    const moves = freeCells(b);
-    if (isMax) {
-      let best = -Infinity;
-      for (const m of moves) {
-        b[m] = "O";
-        best = Math.max(best, minimax(b, false, alpha, beta, depth+1));
-        b[m] = null;
-        alpha = Math.max(alpha, best);
-        if (beta <= alpha) break;
-      }
-      return best;
-    } else {
-      let best = Infinity;
-      for (const m of moves) {
-        b[m] = "X";
-        best = Math.min(best, minimax(b, true, alpha, beta, depth+1));
-        b[m] = null;
-        beta = Math.min(beta, best);
-        if (beta <= alpha) break;
-      }
-      return best;
-    }
-  }
-
-  function chooseMove(b, diff) {
-    const moves = freeCells(b);
-    if (!moves.length) return null;
-
-    // Easy — random
-    if (diff === "easy") return moves[Math.floor(Math.random()*moves.length)];
-
-    // Medium — win → block → center/corners
-    if (diff === "medium") {
-      for (const m of moves) { b[m]="O"; if(checkWinFor(b,"O")){b[m]=null;return m;} b[m]=null; }
-      for (const m of moves) { b[m]="X"; if(checkWinFor(b,"X")){b[m]=null;return m;} b[m]=null; }
-      for (const p of [4,0,2,6,8,1,3,5,7]) { if(!b[p]) return p; }
-      return moves[0];
+        if (mode === "ai" && current === "O") {
+            lockBoard(true);
+            setTimeout(aiTurn, 480 + Math.random() * 200);
+        }
     }
 
-    // Hard — minimax
-    let bestScore=-Infinity, bestMove=moves[0];
-    for (const m of moves) {
-      b[m]="O";
-      const s = minimax(b, false, -Infinity, Infinity, 0);
-      b[m]=null;
-      if (s > bestScore) { bestScore=s; bestMove=m; }
+    function lockBoard(on) {
+        document.querySelectorAll(".ttt-cell").forEach(c => {
+            if (!board[parseInt(c.dataset.i)]) c.disabled = on;
+        });
     }
-    return bestMove;
-  }
 
-  function aiTurn() {
-    if (gameOver) return;
-    const move = chooseMove([...board], difficulty); // pass copy so minimax doesn't corrupt state
-    lockBoard(false);
-    if (move !== null) placeMove(move, "O");
-    afterMove();
-  }
+    // ── Win detection ──
+    function getWinner(b) {
+        for (let idx = 0; idx < WINS.length; idx++) {
+            const [a, x, c] = WINS[idx];
+            if (b[a] && b[a] === b[x] && b[x] === b[c]) {
+                return { sym: b[a], combo: WINS[idx], coordIdx: idx };
+            }
+        }
+        return null;
+    }
+
+    // ── End of round ──
+    function endRound(win) {
+        gameOver = true;
+        lockBoard(true);
+
+        if (win) {
+            // Highlight winning cells
+            win.combo.forEach(i => {
+                const cell = document.querySelector(`.ttt-cell[data-i="${i}"]`);
+                if (cell) cell.classList.add("ttt-cell--win");
+            });
+            // Draw SVG win line
+            drawWinLine(win.coordIdx);
+
+            const winnerName = win.sym === "X" ? p1 : p2;
+            if (win.sym === "X") scores.p1++; else scores.p2++;
+            syncScoreboard();
+
+            setResult("🏆", `${winnerName} wins this round!`);
+        } else {
+            scores.draws++;
+            syncScoreboard();
+            setResult("🤝", "It's a draw!");
+        }
+
+        // Update Next button label
+        setTimeout(() => {
+            const majority = Math.ceil(maxRounds / 2);
+            const matchDone = round >= maxRounds
+                || scores.p1 >= majority
+                || scores.p2 >= majority;
+            const nextBtn = document.getElementById("ttt-next");
+            if (nextBtn) nextBtn.textContent = matchDone ? "See Results →" : "Next Round →";
+
+            const overlay = document.getElementById("ttt-result-overlay");
+            if (overlay) overlay.style.display = "flex";
+        }, 600);
+    }
+
+    function setResult(emoji, text) {
+        const e = document.getElementById("ttt-res-emoji");
+        const t = document.getElementById("ttt-res-text");
+        if (e) e.textContent = emoji;
+        if (t) t.textContent = text;
+    }
+
+    // ── Win-line SVG ──
+    // Grid cells are (col, row) 0-indexed; centre of cell = col+0.5, row+0.5
+    function drawWinLine(comboIdx) {
+        const line = document.getElementById("ttt-win-line");
+        const svg = document.getElementById("ttt-win-svg");
+        if (!line || !svg) return;
+
+        const [[c1, r1], [c2, r2]] = WIN_COORDS[comboIdx];
+        line.setAttribute("x1", c1 + 0.5);
+        line.setAttribute("y1", r1 + 0.5);
+        line.setAttribute("x2", c2 + 0.5);
+        line.setAttribute("y2", r2 + 0.5);
+        line.setAttribute("opacity", "1");
+        svg.classList.add("ttt-win-svg--visible");
+    }
+
+    function clearWinLine() {
+        const line = document.getElementById("ttt-win-line");
+        const svg = document.getElementById("ttt-win-svg");
+        if (line) line.setAttribute("opacity", "0");
+        if (svg) svg.classList.remove("ttt-win-svg--visible");
+    }
+
+    // ── Final screen ──
+    function renderFinal() {
+        const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+        set("ttt-fp1", p1);
+        set("ttt-fp2", p2);
+        set("ttt-fp1s", scores.p1);
+        set("ttt-fp2s", scores.p2);
+        set("ttt-final-draws", `${scores.draws} draw${scores.draws !== 1 ? "s" : ""}`);
+
+        let title;
+        if (scores.p1 > scores.p2) title = `🏆 ${p1} wins the match!`;
+        else if (scores.p2 > scores.p1) title = `🏆 ${p2} wins the match!`;
+        else title = "🤝 The match is tied!";
+        set("ttt-final-title", title);
+    }
+
+    // ── AI engines ──
+    function freeCells(b) {
+        return b.reduce((acc, v, i) => { if (!v) acc.push(i); return acc; }, []);
+    }
+
+    function checkWinFor(b, sym) {
+        return WINS.some(([a, x, c]) => b[a] === sym && b[x] === sym && b[c] === sym);
+    }
+
+    function minimax(b, isMax, alpha, beta, depth) {
+        if (checkWinFor(b, "O")) return 10 - depth;
+        if (checkWinFor(b, "X")) return depth - 10;
+        if (b.every(c => c)) return 0;
+
+        const moves = freeCells(b);
+        if (isMax) {
+            let best = -Infinity;
+            for (const m of moves) {
+                b[m] = "O";
+                best = Math.max(best, minimax(b, false, alpha, beta, depth + 1));
+                b[m] = null;
+                alpha = Math.max(alpha, best);
+                if (beta <= alpha) break;
+            }
+            return best;
+        } else {
+            let best = Infinity;
+            for (const m of moves) {
+                b[m] = "X";
+                best = Math.min(best, minimax(b, true, alpha, beta, depth + 1));
+                b[m] = null;
+                beta = Math.min(beta, best);
+                if (beta <= alpha) break;
+            }
+            return best;
+        }
+    }
+
+    function chooseMove(b, diff) {
+        const moves = freeCells(b);
+        if (!moves.length) return null;
+
+        // Easy — random
+        if (diff === "easy") return moves[Math.floor(Math.random() * moves.length)];
+
+        // Medium — win → block → center/corners
+        if (diff === "medium") {
+            for (const m of moves) { b[m] = "O"; if (checkWinFor(b, "O")) { b[m] = null; return m; } b[m] = null; }
+            for (const m of moves) { b[m] = "X"; if (checkWinFor(b, "X")) { b[m] = null; return m; } b[m] = null; }
+            for (const p of [4, 0, 2, 6, 8, 1, 3, 5, 7]) { if (!b[p]) return p; }
+            return moves[0];
+        }
+
+        // Hard — minimax
+        let bestScore = -Infinity, bestMove = moves[0];
+        for (const m of moves) {
+            b[m] = "O";
+            const s = minimax(b, false, -Infinity, Infinity, 0);
+            b[m] = null;
+            if (s > bestScore) { bestScore = s; bestMove = m; }
+        }
+        return bestMove;
+    }
+
+    function aiTurn() {
+        if (gameOver) return;
+        const move = chooseMove([...board], difficulty); // pass copy so minimax doesn't corrupt state
+        lockBoard(false);
+        if (move !== null) placeMove(move, "O");
+        afterMove();
+    }
 
 } // end initTicTacToe
 // ================================
@@ -3598,7 +3380,7 @@ function initializeProject(projectName) {
         'resume-analyzer': 'initAIResumeAnalyzer',
         'caesar-cipher': 'initCaesarCipher'
     };
-    
+
     const initializerName = initializers[projectName];
     if (initializerName && typeof window[initializerName] === 'function') {
         window[initializerName]();
@@ -3610,8 +3392,8 @@ function initializeProject(projectName) {
 // ============================================================================
 // ARCHITECTURAL NOTE: INDIVIDUAL PROJECT MODULES
 // ============================================================================
-// All specific HTML templates, inline CSS styles, and interactive game/tool 
-// logic have been extracted from this registry file to enforce a clean, 
+// All specific HTML templates, inline CSS styles, and interactive game/tool
+// logic have been extracted from this registry file to enforce a clean,
 // modular design patterns.
 //
 // If you are looking to modify, fix, or understand how a specific project works:
