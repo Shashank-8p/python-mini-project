@@ -194,8 +194,10 @@ def main() -> None:
             if screen_initialized and screen is not None:
                 try:
                     screen.bye()
-                except:
-                    pass
+                except turtle.Terminator:
+                    pass  # Expected termination when window is closed
+                except Exception as e:
+                    print(f"⚠️ Error closing turtle screen: {e}")
             break
 
 if __name__ == "__main__":
