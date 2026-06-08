@@ -2947,7 +2947,6 @@ body.sidebar-active .sidebar-dock {
   background: rgba(239, 68, 68, 0.15);
   color: var(--danger);
   border-color: rgba(239, 68, 68, 0.3);
-  transform: rotate(90deg);
 }
 
 .modal-dialog-title {
