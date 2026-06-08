@@ -38,6 +38,22 @@
 
 </div>
 
+## 📚 Table of Contents
+
+- [🎯 Repo Introduction](#-repo-introduction)
+- [🌐 Live Demo](#-live-demo)
+- [📂 Repo Structure](#-repo-structure)
+- [🧩 What's Inside](#-whats-inside)
+- [🌐 Web App Catalog](#-web-app-catalog)
+  - [Games](#games)
+  - [Math](#math)
+  - [Utilities](#utilities)
+- [🧭 Python Projects Without a Web App Yet](#-python-projects-without-a-web-app-yet)
+- [Contributors](#contributors)
+- [📝 License](#-license)
+- [💬 Connect & Share](#-connect--share)
+
+
 ## 🎯 Repo Introduction
 
 This repository is a collection of small Python games and utility projects built to make learning Python more practical and engaging. It includes both command-line projects and a browser-based web app for trying the projects online.
