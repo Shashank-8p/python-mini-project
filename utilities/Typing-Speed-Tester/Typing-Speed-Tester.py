@@ -2,6 +2,10 @@ import time
 import random
 import urllib.request
 import json
+import sys
+import os
+import asyncio
+import aiohttp
 
 # Local fallback sentences
 fallback_sentences = [
@@ -22,6 +26,32 @@ fallback_sentences = [
     "The best way to predict the future is to create it"
 ]
 
+async def fetch_url(session, url):
+    try:
+        async with session.get(url, headers={'User-Agent': 'Mozilla/5.0'}, timeout=3) as resp:
+            if resp.status == 200:
+                data = await resp.json()
+                phrase = data.get('quote') or data.get('content')
+                if phrase:
+                    return phrase
+    except Exception:
+        pass
+    return None
+
+async def fetch_phrase_async():
+    urls = [
+        "https://dummyjson.com/quotes/random",
+        "https://api.quotable.io/random"
+    ]
+    async with aiohttp.ClientSession() as session:
+        tasks = [fetch_url(session, url) for url in urls]
+        # Gather them concurrently
+        results = await asyncio.gather(*tasks)
+        for res in results:
+            if res:
+                return res
+    return None
+
 print("\n⌨️ ===============================")
 print("   WELCOME TO TYPING SPEED TESTER")
 print("================================ ⌨️\n")
@@ -29,25 +59,7 @@ print("================================ ⌨️\n")
 while True:
     print("🌐 Fetching a fresh phrase for you...")
     
-    # Try multiple APIs for robustness
-    urls = [
-        "https://dummyjson.com/quotes/random",
-        "https://api.quotable.io/random"
-    ]
-    
-    sentence = None
-    for url in urls:
-        try:
-            req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-            with urllib.request.urlopen(req, timeout=3) as response:
-                data = json.loads(response.read().decode())
-                # dummyjson uses 'quote', quotable uses 'content'
-                phrase = data.get('quote') or data.get('content')
-                if phrase:
-                    sentence = phrase
-                    break
-        except Exception:
-            continue
+    sentence = asyncio.run(fetch_phrase_async())
             
     if not sentence:
         print("📴 Offline or API unavailable. Using a classic phrase instead.")

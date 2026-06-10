@@ -12,3 +12,4 @@ pytest>=8.0.0
 # Utilities dependencies
 nltk==3.9.4
 requests==2.33.0
+aiohttp==3.11.11
