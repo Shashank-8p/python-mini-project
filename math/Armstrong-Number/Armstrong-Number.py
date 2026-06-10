@@ -9,6 +9,7 @@ else:
 from utils.validation import get_int
 
 def is_armstrong_number(n: int) -> bool:
+    """Check if a number is an Armstrong number."""
     if n < 0:
         return False
     num_str = str(n)
@@ -17,6 +18,7 @@ def is_armstrong_number(n: int) -> bool:
     return total == n
 
 def main() -> None:
+    """Run the Armstrong number checker CLI."""
     print("=" * 50)
     print("🔢 ARMSTRONG NUMBER CHECKER 🔢")
     print("=" * 50)

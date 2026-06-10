@@ -11,11 +11,15 @@ MAX_INPUT = 10**12
 steps_cache = {1: 0}
 
 
-def collatz_next(n):
+from typing import List, Generator
+
+def collatz_next(n: int) -> int:
+    """Calculate the next number in the Collatz sequence."""
     return n // 2 if n % 2 == 0 else 3 * n + 1
 
 
-def get_remaining_sequence(n):
+def get_remaining_sequence(n: int) -> List[int]:
+    """Calculate the remaining sequence for a given number until it reaches 1."""
     seq = []
     while n != 1:
         n = collatz_next(n)
@@ -23,7 +27,8 @@ def get_remaining_sequence(n):
     return seq
 
 
-def collatz_sequence(start):
+def collatz_sequence(start: int) -> Generator[int, None, None]:
+    """Generate the Collatz sequence starting from the given number."""
     if start in steps_cache:
         n = start
         yield n
