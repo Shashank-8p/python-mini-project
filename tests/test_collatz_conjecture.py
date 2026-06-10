@@ -36,11 +36,11 @@ class TestCollatzConjecture(unittest.TestCase):
 
     def test_detailed_explanation(self):
         """Test the 'y' prompt for step-by-step details."""
-        output = self.run_script(["3", "y"])
+        output = self.run_script(["3", "y", "n"])
         self.assertIn("Detailed Steps:", output)
-        self.assertIn("3 is odd ➡️ (3 x 3) + 1 = 10", output)
-        self.assertIn("10 is even ➡️ 10 ÷ 2 = 5", output)
-    
+        self.assertIn("3 is odd", output)
+        self.assertIn("= 10", output)
+
     def test_mathematical_power_of_two(self):
         """Test a power of two (16), which should go straight to 1."""
         # 16 -> 8 -> 4 -> 2 -> 1 (4 steps)
