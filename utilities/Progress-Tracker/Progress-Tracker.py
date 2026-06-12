@@ -50,10 +50,10 @@ def load_data() -> dict:
     if os.path.exists(DATA_FILE):
         with open(DATA_FILE, "r") as f:
             data = json.load(f)
-        # Migrate old names to new folder names
+        # Migrate old names to new folder names (corrected mappings)
         migrations = {
-            "Dice-Rolling": "Roling-Dice",
-            "Coin-Flip": "Flipping-toss",
+            "Dice-Rolling": "Rolling-Dice",
+            "Coin-Flip": "Flipping-Toss",
             "Pascals-Triangle": "Pascal-Triangle"
         }
         completed = data.get("completed", {})
@@ -61,8 +61,15 @@ def load_data() -> dict:
         mutated = False
         for k, v in completed.items():
             if k in migrations:
-                updated_completed[migrations[k]] = v
-                mutated = True
+                new_key = migrations[k]
+                # Validate: only migrate if the new key exists in the registry
+                if new_key in ALL_PROJECT_NAMES:
+                    updated_completed[new_key] = v
+                    mutated = True
+                else:
+                    # If new key doesn't exist in registry, keep old key and warn
+                    print(f"⚠️ Warning: migration target '{new_key}' not found in registry. Keeping old key '{k}'.")
+                    updated_completed[k] = v
             else:
                 updated_completed[k] = v
         if mutated:
